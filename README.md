@@ -1,5 +1,7 @@
 ﻿# chama.ai 🚀
 
+> Last deployed: 2026-10-08 15:28 UTC — triggering Vercel redeployment.
+
 ## AI-Powered Wealth Collective 🌟
 
 _Transform communities into thriving wealth ecosystems where members save, invest, and grow together_

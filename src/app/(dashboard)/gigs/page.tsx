@@ -202,7 +202,8 @@ export default function GigsPage() {
                   <Button type="submit">Create Gig Job</Button>
                 </DialogFooter>
               </form>
-            </DialogContent          </Dialog>
+                      </DialogContent>
+        </Dialog>
         </div>
 
         {/* Stats Cards */}
@@ -393,5 +394,6 @@ export default function GigsPage() {
           </TabsContent>
         </Tabs>
       </div>
+    </div>
   );
 }

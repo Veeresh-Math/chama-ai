@@ -102,3 +102,29 @@ export function verifyWebhookSignature(
     );
   });
 }
+export async function createSplitPayment({
+  senderBatchId,
+  emailSubject,
+  items,
+}: {
+  senderBatchId: string;
+  emailSubject: string;
+  items: Array<{
+    recipient_type: 'EMAIL' | 'PHONE';
+    amount: { value: string; currency: string };
+    receiver: string;
+    note?: string;
+  }>;
+}) {
+  return new Promise((resolve, reject) => {
+    const payout = {
+      sender_batch_header: { sender_batch_id: senderBatchId, email_subject: emailSubject },
+      items,
+    };
+
+    paypal.payout.create(payout, (err, payout) => {
+      if (err) reject(err);
+      else resolve(payout);
+    });
+  });
+}

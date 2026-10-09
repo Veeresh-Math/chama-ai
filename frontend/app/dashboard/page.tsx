@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Users, Zap, ShieldCheck, CreditCard, ArrowRight, Activity, Lock, Globe } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("community");

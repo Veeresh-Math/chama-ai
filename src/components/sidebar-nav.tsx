@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import {
-  Dashboard,
+  LayoutDashboard,
   Wallet,
   Users,
   TrendingUp,
@@ -14,7 +14,7 @@ import {
 import { Link } from 'next/router';
 import { clsx } from 'clsx';
 
-export default function SidebarNav() {
+export function SidebarNav() {
   return (
     <div className="flex flex-col h-full px-2 pt-4">
       <div className="flex items-center space-x-3 mb-6">
@@ -27,7 +27,7 @@ export default function SidebarNav() {
         <Link href="/app/dashboard" className={clsx('flex items-center space-x-3 rounded-md p-3 text-base font-medium text-gray-700 hover:bg-primary-50 hover:text-white', {
           'bg-primary-50 text-white': true // This would be active state logic
         })}>
-          <Dashboard className="h-4 w-4" />
+          <LayoutDashboard className="h-4 w-4" />
           <span className="flex-1">Dashboard</span>
         </Link>
         
@@ -66,3 +66,4 @@ export default function SidebarNav() {
     </div>
   );
 }
+

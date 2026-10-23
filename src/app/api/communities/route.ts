@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       where: eq(communities.ownerId, userId),
       with: {
         members: true,
-        contributions: { limit: 5, orderBy: (c, { desc }) => [desc(c.createdAt)] },
+        contributions: { limit: 5, orderBy: (c, { desc }) => [desc(c.contributedAt)] },
       },
       orderBy: (c, { desc }) => [desc(c.createdAt)],
     });

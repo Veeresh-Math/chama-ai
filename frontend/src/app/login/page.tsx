@@ -8,7 +8,6 @@ import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle, Zap, Globe, Sh
 
 export default function LoginPage() {
   const router = useRouter();
-  const formRef = useRef<HTMLFormElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -106,8 +105,8 @@ export default function LoginPage() {
     alert("Google Sign-In would trigger OAuth flow in production");
   };
 
-  return (
-    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-6 py-12" ref={formRef}>
+return (
+    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
         <div className="glass-card p-8 md:p-10 rounded-3xl" ref={cardRef}>
           <div className="text-center mb-8">
@@ -163,7 +162,7 @@ export default function LoginPage() {
                   className={`w-full pl-12 pr-12 py-3.5 bg-white/5 border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-paypalBlue transition-all ${
                     errors.password ? "border-red-500" : "border-white/10"
                   }`}
-                  placeholder="••••••••"
+                  placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"
                   disabled={isSubmitting}
                   autoComplete="current-password"
                 />

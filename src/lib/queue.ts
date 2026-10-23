@@ -34,9 +34,9 @@ export async function scheduleJob(queue: string, payload: unknown, runAt: Date) 
 
 export async function getScheduledJobs(queue: string): Promise<unknown[]> {
   const now = Date.now();
-  const jobs = await redis.zrangebyscore(queue, 0, now);
+  const jobs = await redis.zrange<string[]>(queue, 0, now, { byScore: true });
   if (jobs.length > 0) {
     await redis.zremrangebyscore(queue, 0, now);
   }
-  return jobs.map(j => JSON.parse(j as string));
+  return jobs.map((j) => JSON.parse(j));
 }

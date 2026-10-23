@@ -1,0 +1,252 @@
+<style>
+  :root {
+    --deep-space: #050505;
+    --paypal-blue: #0070f3;
+    --electric-violet: #8a2be2;
+    --cream: #eaeaea;
+    --text-muted: #888;
+  }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--deep-space);
+    color: white;
+    overflow-x: hidden;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  .hero {
+    padding: 120px 0;
+    text-align: center;
+    background: radial-gradient(circle at 50% 50%, #111 0%, #050505 100%);
+  }
+  .hero h1 {
+    font-size: 5rem;
+    font-weight: 400;
+    line-height: 0.95;
+    margin-bottom: 2rem;
+    letter-spacing: -0.03em;
+  }
+  .hero h1 span {
+    font-family: serif;
+    font-style: italic;
+  }
+  .hero p {
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.7);
+    max-width: 600px;
+    margin: 0 auto 3rem;
+  }
+  .cta-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 5rem;
+  }
+  .btn {
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .btn-primary {
+    background: white;
+    color: black;
+  }
+  .btn-ghost {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .product-mock {
+    background: white;
+    color: black;
+    border-radius: 32px;
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .mock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  .mock-badge {
+    background: #ecfdf5;
+    color: #047857;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .balance-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+  }
+  .balance-amount {
+    font-size: 3rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .ai-insight {
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    padding: 1.5rem;
+    border-radius: 20px;
+    color: #5b21b6;
+    font-size: 14px;
+  }
+  .ai-insight strong {
+    color: #4c1d95;
+  }
+  .features-section {
+    background: var(--cream);
+    color: black;
+    padding: 100px 0;
+  }
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 4rem;
+  }
+  .feature-card {
+    background: rgba(0,0,0,0.05);
+    padding: 2.5rem;
+    border-radius: 32px;
+    transition: transform 0.2s;
+  }
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+  .feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.03em;
+  }
+  .feature-card p {
+    color: rgba(0,0,0,0.6);
+    line-height: 1.5;
+  }
+  .trust-section {
+    background: #0a0a0a;
+    color: white;
+    padding: 100px 0;
+  }
+  .trust-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  .trust-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 1.5rem;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+  }
+</style>
+
+<div class="hero">
+  <div class="container">
+    <h1>Pool money.<br><span>Decide together.</span></h1>
+    <p>The AI-powered wealth collective for savings circles, investment pools and gig escrow — with PayPal and PYUSD settlement built in.</p>
+    <div class="cta-group">
+      <a href="#" class="btn btn-primary">Start your circle — free</a>
+      <a href="#" class="btn btn-ghost">Watch the 90-second flow</a>
+    </div>
+    
+    <div class="product-mock">
+      <div class="mock-header">
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <div style="width: 36px; height: 36px; background: black; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">KT</div>
+          <div>
+            <div style="font-weight: 600; font-size: 14px;">Kibera Traders Chama</div>
+            <div style="font-size: 12px; color: #666;">Cycle 14 · 22 members</div>
+          </div>
+        </div>
+        <div class="mock-badge">● Live</div>
+      </div>
+      <div class="balance-section">
+        <div>
+          <div style="font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 0.1em;">Pool Balance</div>
+          <div class="balance-amount">$48,920.00</div>
+        </div>
+        <div class="mock-badge" style="background: #d1fae5; color: #065f46;">↑ 12.4% this cycle</div>
+      </div>
+      <div class="ai-insight">
+        <div style="font-weight: 600; font-size: 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <span style="width: 6px; height: 6px; background: #8a2be2; border-radius: 50%; animation: pulse 2s infinite;"></span>
+          AI COPILOT INSIGHT
+        </div>
+        Laddering T-bills to 14 Mar keeps your idle cash earning <strong>+$610</strong> before the next payout — want me to prepare the proposal?
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="features-section">
+  <div class="container">
+    <h2 style="font-size: 3rem; text-align: center; letter-spacing: -0.04em; margin-bottom: 1rem;">Everything a money-pooling group actually needs.</h2>
+    <p style="text-align: center; color: rgba(0,0,0,0.6); max-width: 600px; margin: 0 auto 4rem;">One workspace for the contributions, the conversations, the compliance and the payouts.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <h3>An agent that transacts</h3>
+        <p>Not a chatbot that suggests — Cham.ai plans the transfer, checks limits and trust, then executes the PayPal payment.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Savings circles on autopilot</h3>
+        <p>Contribution schedules, reminders, rollovers and distributions handled end to end.</p>
+      </div>
+      <div class="feature-card">
+        <h3>Gig milestone escrow</h3>
+        <p>Funds locked per milestone, released on approval — no chasing, no awkwardness.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="trust-section">
+  <div class="container">
+    <div class="trust-grid">
+      <div>
+        <div style="background: rgba(255,255,255,0.1); display: inline-block; padding: 4px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 1rem;">Trust Controls</div>
+        <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem; letter-spacing: -0.02em;">An agent you can hand the money to</h2>
+        <p style="color: rgba(255,255,255,0.6); line-height: 1.6;">Payments demand safety. Every transaction sits behind limits, explicit approval, and an immutable audit log.</p>
+      </div>
+      <div>
+        <div class="trust-card">
+          <div style="font-weight: 600; margin-bottom: 8px;">Spending Limits</div>
+          <div style="color: rgba(255,255,255,0.6); font-size: 14px;">Per-cycle caps on every circle. Exceed it and the agent stops and escalates.</div>
+        </div>
+        <div class="trust-card">
+          <div style="font-weight: 600; margin-bottom: 8px;">Agent Council Consensus</div>
+          <div style="color: rgba(255,255,255,0.6); font-size: 14px;">Trust, Compliance, and Treasury agents must all approve before money moves.</div>
+        </div>
+        <div class="trust-card">
+          <div style="font-weight: 600; margin-bottom: 8px;">Immutable Audit Log</div>
+          <div style="color: rgba(255,255,255,0.6); font-size: 14px;">Every action is recorded: who asked, who approved, and the PayPal receipt.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+  }
+</style>

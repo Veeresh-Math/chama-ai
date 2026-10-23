@@ -2,15 +2,15 @@ import { ChatOpenAI } from '@langchain/openai';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { createToolCallingAgent } from 'langchain/agents';
 import { AgentExecutor } from 'langchain/agents';
-import { StructuredTool } from '@langchain/core/tools';
+import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { db } from '@/db';
 import { communities, communityMembers, contributions, distributions, gigJobs, gigMilestones, transactions, users } from '@/db/schema';
 import { eq, and, sum, sql } from 'drizzle-orm';
-import { createPayPalPayment, createSplitPayment } from '@/lib/paypal';
+import { createPayment, createSplitPayment } from '@/lib/paypal';
 
 // Tool: Create PayPal Payment
-const createPaymentTool = new StructuredTool({
+const createPaymentTool = new DynamicStructuredTool({
   name: 'create_paypal_payment',
   description: 'Create a PayPal payment to send money to a recipient. Use this when you need to process a payment.',
   schema: z.object({
@@ -21,7 +21,7 @@ const createPaymentTool = new StructuredTool({
   }),
   func: async ({ amount, currency, recipient, description }) => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
-    const payment = await createPayPalPayment({
+    const payment = await createPayment({
       amount,
       currency,
       description,
@@ -33,7 +33,7 @@ const createPaymentTool = new StructuredTool({
 });
 
 // Tool: Create Split Payment (Community Distribution)
-const createSplitPaymentTool = new StructuredTool({
+const createSplitPaymentTool = new DynamicStructuredTool({
   name: 'create_split_payment',
   description: 'Create a split PayPal payment to multiple recipients. Use this for community savings groups.',
   schema: z.object({
@@ -63,7 +63,7 @@ const createSplitPaymentTool = new StructuredTool({
 });
 
 // Tool: Get Community Data
-const getCommunityDataTool = new StructuredTool({
+const getCommunityDataTool = new DynamicStructuredTool({
   name: 'get_community_data',
   description: 'Get community savings data including members, contributions, and trust scores.',
   schema: z.object({
@@ -83,7 +83,7 @@ const getCommunityDataTool = new StructuredTool({
 });
 
 // Tool: Get User's Gig Jobs
-const getGigJobsTool = new StructuredTool({
+const getGigJobsTool = new DynamicStructuredTool({
   name: 'get_gig_jobs',
   description: 'Get user\'s gig jobs and milestones.',
   schema: z.object({
@@ -99,7 +99,7 @@ const getGigJobsTool = new StructuredTool({
 });
 
 // Tool: Get User Transactions
-const getUserTransactionsTool = new StructuredTool({
+const getUserTransactionsTool = new DynamicStructuredTool({
   name: 'get_user_transactions',
   description: 'Get user\'s recent transactions for financial analysis.',
   schema: z.object({
@@ -117,7 +117,7 @@ const getUserTransactionsTool = new StructuredTool({
 });
 
 // Tool: Analyze Community Trust
-const analyzeTrustTool = new StructuredTool({
+const analyzeTrustTool = new DynamicStructuredTool({
   name: 'analyze_community_trust',
   description: 'Analyze community for fraud risk and assign trust score 0-100.',
   schema: z.object({
@@ -157,7 +157,7 @@ const analyzeTrustTool = new StructuredTool({
 });
 
 // Tool: Check Milestones
-const checkMilestonesTool = new StructuredTool({
+const checkMilestonesTool = new DynamicStructuredTool({
   name: 'check_gig_milestones',
   description: 'Check if all milestones for a gig job are completed and trigger payment if so.',
   schema: z.object({
@@ -174,7 +174,7 @@ const checkMilestonesTool = new StructuredTool({
     const allCompleted = job.milestones.every(m => m.isCompleted);
     if (allCompleted && job.status !== 'completed') {
       // Trigger payment via agent
-      return `All milestones completed for "${job.title}"! Ready to process payment of $${job.total_budget} to ${job.clientEmail}.`;
+      return `All milestones completed for "${job.title}"! Ready to process payment of $${job.totalBudget} to ${job.clientEmail}.`;
     }
 
     const pending = job.milestones.filter(m => !m.isCompleted).map(m => m.name).join(', ');
@@ -185,8 +185,8 @@ const checkMilestonesTool = new StructuredTool({
 // Create Agent
 export function createFinancialAgent(userId: string) {
   const llm = new ChatOpenAI({
-    model: 'gpt-4o',
-    apiKey: process.env.OPENAI_API_KEY,
+    modelName: 'gpt-4o',
+    openAIApiKey: process.env.OPENAI_API_KEY,
     temperature: 0.1,
   });
 

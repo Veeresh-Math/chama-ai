@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     const { data: sessionData, error: sessionError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'signup',
       email,
+      password,
     });
 
     if (sessionError) {

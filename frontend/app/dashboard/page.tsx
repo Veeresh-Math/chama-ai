@@ -1,14 +1,37 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Users, Zap, ShieldCheck, CreditCard, ArrowRight, Activity, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import CouncilTerminal from "@/components/council/council-terminal";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("community");
+  const [councilOpen, setCouncilOpen] = useState(false);
+  const [activeCommunityId, setActiveCommunityId] = useState<number | null>(null);
+
+  const handleDistribute = (id: number) => {
+    setActiveCommunityId(id);
+    setCouncilOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-[#050505] text-white p-8">
+      {/* Council Terminal Overlay */}
+      <AnimatePresence>
+        {councilOpen && activeCommunityId && (
+          <CouncilTerminal 
+            streamUrl={`http://localhost:8000/community/distribute-stream/${activeCommunityId}`}
+            onClose={() => setCouncilOpen(false)}
+            onComplete={(result) => {
+              console.log(`Council result: ${result}`);
+              setCouncilOpen(false);
+              // Here we would trigger the actual /distribute payment call if approved
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <header className="flex justify-between items-center mb-12 max-w-7xl mx-auto">
         <div>
@@ -83,7 +106,7 @@ export default function Dashboard() {
                       <div className="text-sm text-gray-400">Pool Value</div>
                       <div className="text-xl font-bold">$1,200.00</div>
                     </div>
-                    <Button variant="outline" size="sm">Distribute</Button>
+                    <Button variant="outline" size="sm" onClick={() => handleDistribute(i)}>Distribute</Button>
                   </div>
                 </motion.div>
               ))}

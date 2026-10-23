@@ -27,7 +27,7 @@ export async function GET(
       where: and(eq(communities.id, id), eq(communities.ownerId, userId)),
       with: {
         members: true,
-        contributions: { orderBy: (c, { desc }) => [desc(c.createdAt)] },
+        contributions: { orderBy: (c, { desc }) => [desc(c.contributedAt)] },
         distributions: { orderBy: (d, { desc }) => [desc(d.createdAt)] },
       },
     });

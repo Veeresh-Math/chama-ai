@@ -6,7 +6,7 @@ import { gsap } from 'gsap';
 interface HoverLiftProps {
   children: ReactNode;
   maxHeight?: number;
-  maxWidth?: number;
+  maxWidth?: number | string;
   scale?: number;
   transition?: 'expand' | 'lift';
 }
@@ -47,9 +47,11 @@ export default function HoverLift({
     ref.current.addEventListener('mouseenter', onMouseEnter);
     ref.current.addEventListener('mouseleave', onMouseLeave);
 
-    return () => {
-      ref.current.removeEventListener('mouseenter', onMouseEnter);
-      ref.current.removeEventListener('mouseleave', onMouseLeave);
+return () => {
+      if (ref.current) {
+        ref.current.removeEventListener('mouseenter', onMouseEnter);
+        ref.current.removeEventListener('mouseleave', onMouseLeave);
+      }
     };
   }, [maxHeight, maxWidth, scale, transition]);
 

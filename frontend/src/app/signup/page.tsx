@@ -8,7 +8,6 @@ import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle, Zap } from "lu
 
 export default function SignupPage() {
   const router = useRouter();
-  const formRef = useRef<HTMLFormElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -119,8 +118,8 @@ export default function SignupPage() {
     { label: "One number", test: /\d/.test(formData.password) },
   ];
 
-  return (
-    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-6 py-12" ref={formRef}>
+return (
+    <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-md">
         <div className="glass-card p-8 md:p-10 rounded-3xl" ref={cardRef}>
           <div className="text-center mb-8">
@@ -213,7 +212,7 @@ export default function SignupPage() {
                     className={`w-full pl-12 pr-12 py-3.5 bg-white/5 border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-paypalBlue transition-all ${
                       errors.password ? "border-red-500" : "border-white/10"
                     }`}
-                    placeholder="••••••••"
+                    placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"
                     disabled={isSubmitting}
                     autoComplete="new-password"
                   />
@@ -263,7 +262,7 @@ export default function SignupPage() {
                     className={`w-full pl-12 pr-12 py-3.5 bg-white/5 border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-paypalBlue transition-all ${
                       errors.confirmPassword ? "border-red-500" : "border-white/10"
                     }`}
-                    placeholder="••••••••"
+                    placeholder="ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"
                     disabled={isSubmitting}
                     autoComplete="new-password"
                   />

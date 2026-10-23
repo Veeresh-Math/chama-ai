@@ -145,7 +145,7 @@ export default function LandingPage() {
               </p>
             </div>
           </motion.div>
-        </div}
+        </div>
       </section>
 
       {/* --- FINAL CTA --- */}
@@ -159,7 +159,7 @@ export default function LandingPage() {
 
       <footer className="py-10 px-8 border-t border-white/10 text-center text-gray-500 text-xs">
         © 2026 ChamaAI. Built for the PayPal AI Hackathon.
-      </footer}
+      </footer>
     </main>
   );
 }

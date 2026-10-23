@@ -1,37 +1,28 @@
 'use client';
 
 import * as React from 'react';
-import DashboardLayout from '@/components/dashboard-layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { formatCurrency, formatRelativeTime, cn } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { formatCurrency, cn } from '@/lib/utils';
+import { FadeIn } from '@/components/animations';
+import { motion } from 'framer-motion';
 import {
   Briefcase,
   Plus,
   DollarSign,
   CheckCircle,
-  Clock,
   MoreHorizontal,
-  Send,
-  RefreshCw,
-  Brain,
-  Settings,
+  Eye,
   Trash2,
   Edit,
-  Eye,
   Target,
-  Calendar,
+  ShieldCheck,
+  Zap,
+  ArrowUpRight,
 } from 'lucide-react';
 
 const mockGigJobs = [
@@ -39,16 +30,13 @@ const mockGigJobs = [
     id: '1',
     title: 'E-commerce Website Redesign',
     description: 'Complete redesign of client\'s Shopify store',
-    freelancerId: 'user-1',
-    clientEmail: 'client@company.com',
     clientName: 'TechCorp Inc.',
     totalBudget: 5000,
-    currency: 'USD',
     status: 'active',
-    createdAt: new Date('2024-09-01'),
+    councilStatus: 'Monitoring',
     milestones: [
-      { id: '1', name: 'Discovery & Research', percentage: 20, amount: 1000, isCompleted: true, completedAt: new Date('2024-09-10') },
-      { id: '2', name: 'Design Mockups', percentage: 30, amount: 1500, isCompleted: true, completedAt: new Date('2024-09-25') },
+      { id: '1', name: 'Discovery & Research', percentage: 20, amount: 1000, isCompleted: true },
+      { id: '2', name: 'Design Mockups', percentage: 30, amount: 1500, isCompleted: true },
       { id: '3', name: 'Development', percentage: 35, amount: 1750, isCompleted: false },
       { id: '4', name: 'Testing & Launch', percentage: 15, amount: 750, isCompleted: false },
     ],
@@ -57,42 +45,22 @@ const mockGigJobs = [
     id: '2',
     title: 'Mobile App MVP',
     description: 'React Native app for food delivery startup',
-    freelancerId: 'user-1',
-    clientEmail: 'founder@startup.io',
     clientName: 'FoodieApp',
     totalBudget: 8000,
-    currency: 'USD',
     status: 'active',
-    createdAt: new Date('2024-10-01'),
+    councilStatus: 'Verifying',
     milestones: [
-      { id: '5', name: 'Project Setup & Architecture', percentage: 15, amount: 1200, isCompleted: true, completedAt: new Date('2024-10-10') },
+      { id: '5', name: 'Project Setup', percentage: 15, amount: 1200, isCompleted: true },
       { id: '6', name: 'Core Features', percentage: 40, amount: 3200, isCompleted: false },
       { id: '7', name: 'API Integration', percentage: 25, amount: 2000, isCompleted: false },
       { id: '8', name: 'Beta Testing', percentage: 10, amount: 800, isCompleted: false },
-      { id: '9', name: 'App Store Deployment', percentage: 10, amount: 800, isCompleted: false },
+      { id: '9', name: 'Deployment', percentage: 10, amount: 800, isCompleted: false },
     ],
   },
 ];
 
 export default function GigsPage() {
   const [showCreateDialog, setShowCreateDialog] = React.useState(false);
-  const [formData, setFormData] = React.useState({
-    title: '',
-    description: '',
-    clientEmail: '',
-    clientName: '',
-    totalBudget: 1000,
-    currency: 'USD',
-    milestones: '',
-  });
-  const [activeTab, setActiveTab] = React.useState('overview');
-
-  const handleCreateJob = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Creating gig job:', formData);
-    setShowCreateDialog(false);
-    setFormData({ title: '', description: '', clientEmail: '', clientName: '', totalBudget: 1000, currency: 'USD', milestones: '' });
-  };
 
   const getProgress = (job: typeof mockGigJobs[0]) => {
     const completed = job.milestones.filter(m => m.isCompleted).length;
@@ -104,295 +72,193 @@ export default function GigsPage() {
   };
 
    return (
-     <div>
-       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gig Worker Hub</h1>
-            <p className="text-gray-500 mt-1">Track milestones and get paid autonomously with AI-powered verification</p>
+     <div className="space-y-10 pb-20">
+        <FadeIn direction="up" duration={0.5}>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-black/40 mb-2">
+                <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                Escrow Command Center
+              </div>
+              <h1 className="text-4xl font-medium tracking-tight text-black sm:text-5xl">
+                Gig <span className="font-serif italic text-black/70">Hub.</span>
+              </h1>
+              <p className="text-black/50 max-w-md text-sm leading-relaxed">
+                Institutional-grade milestone escrow. Managed by the Agent Council, settled via PayPal.
+              </p>
+            </div>
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button className="rounded-full px-6 h-11 bg-black text-white hover:bg-black/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-black/10">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Initialize Escrow
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="rounded-[32px] sm:max-w-[480px]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-medium tracking-tight">Initialize Gig Escrow</DialogTitle>
+                </DialogHeader>
+                <form className="space-y-6 py-4">
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-black/40">Job Title</label>
+                      <Input className="rounded-xl border-black/10 h-11 focus-visible:ring-black" placeholder="e.g., Website Redesign" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-black/40">Client Email</label>
+                      <Input className="rounded-xl border-black/10 h-11 focus-visible:ring-black" placeholder="client@company.com" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-black/40">Total Budget (USD)</label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/30" />
+                      <Input type="number" className="rounded-xl border-black/10 h-11 pl-10 focus-visible:ring-black" placeholder="5000" />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="ghost" onClick={() => setShowCreateDialog(false)} className="rounded-full h-11">Cancel</Button>
+                    <Button className="rounded-full px-6 h-11 bg-black text-white hover:bg-black/90">Lock Funds</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Gig Job
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create New Gig Job</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreateJob} className="space-y-4 py-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Job Title *</label>
-                    <Input
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="e.g., E-commerce Website Redesign"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Client Email *</label>
-                    <Input
-                      type="email"
-                      value={formData.clientEmail}
-                      onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-                      placeholder="client@company.com"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Client Name</label>
-                  <Input
-                    value={formData.clientName}
-                    onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                    placeholder="Company Name"
-                  />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Total Budget *</label>
-                    <Input
-                      type="number"
-                      value={formData.totalBudget}
-                      onChange={(e) => setFormData({ ...formData, totalBudget: parseFloat(e.target.value) || 0 })}
-                      min="100"
-                      step="100"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Currency</label>
-                    <Select value={formData.currency} onValueChange={(v) => setFormData({ ...formData, currency: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="USD">USD ($)</SelectItem>
-                        <SelectItem value="KES">KES (KSh)</SelectItem>
-                        <SelectItem value="NGN">NGN (₦)</SelectItem>
-                        <SelectItem value="GHS">GHS (₵)</SelectItem>
-                        <SelectItem value="ZAR">ZAR (R)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Describe the project scope..."
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Milestones (one per line, auto-split by percentage)</label>
-                  <Textarea
-                    value={formData.milestones}
-                    onChange={(e) => setFormData({ ...formData, milestones: e.target.value })}
-                    placeholder="Discovery & Research&#10;Design Mockups&#10;Development&#10;Testing & Launch"
-                    rows={4}
-                  />
-                </div>
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
-                  <Button type="submit">Create Gig Job</Button>
-                </DialogFooter>
-              </form>
-                      </DialogContent>
-        </Dialog>
-        </div>
+        </FadeIn>
 
-        {/* Stats Cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Active Jobs</p>
-                  <p className="text-3xl font-bold text-gray-900">{mockGigJobs.filter(j => j.status === 'active').length}</p>
+          {[
+            { label: 'Active Jobs', value: mockGigJobs.length, icon: Briefcase, color: 'text-black' },
+            { label: 'Pipeline Value', value: formatCurrency(mockGigJobs.reduce((sum, j) => sum + j.totalBudget, 0)), icon: DollarSign, color: 'text-emerald-600' },
+            { label: 'Settled Capital', value: formatCurrency(mockGigJobs.reduce((sum, j) => sum + getCompletedAmount(j), 0)), icon: CheckCircle, color: 'text-blue-600' },
+            { label: 'Network Efficiency', value: `${Math.round(mockGigJobs.reduce((sum, j) => sum + getProgress(j), 0) / mockGigJobs.length)}%`, icon: Target, color: 'text-orange-600' },
+          ].map((stat, i) => (
+            <FadeIn key={i} direction="up" delay={i * 0.05} duration={0.5}>
+              <div className="rounded-[24px] border border-black/5 bg-white p-6 transition-all hover:border-black/10 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] group">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`p-2 rounded-lg ${stat.color.replace('text', 'bg')}/10`}>
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                  </div>
+                  <ArrowUpRight className="h-3 w-3 text-black/20 group-hover:text-black/40 transition-colors" />
                 </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                  <Briefcase className="h-6 w-6 text-blue-600" />
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-black/40">{stat.label}</p>
+                  <p className="text-2xl font-medium tabular-nums text-black tracking-tight">{stat.value}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Total Pipeline Value</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {formatCurrency(mockGigJobs.reduce((sum, j) => sum + j.totalBudget, 0))}
-                  </p>
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
-                  <DollarSign className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Earned This Month</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {formatCurrency(mockGigJobs.reduce((sum, j) => sum + getCompletedAmount(j), 0))}
-                  </p>
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
-                  <CheckCircle className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Avg Completion</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {Math.round(mockGigJobs.reduce((sum, j) => sum + getProgress(j), 0) / mockGigJobs.length)}%
-                  </p>
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100">
-                  <Target className="h-6 w-6 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            </FadeIn>
+          ))}
         </div>
 
-        {/* Jobs List */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Active Jobs</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview">
-            <div className="space-y-4">
-              {mockGigJobs.filter(j => j.status === 'active').map((job) => (
-                <Card key={job.id} className="overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <CardTitle className="text-lg">{job.title}</CardTitle>
-                          <Badge variant="outline">{job.clientName}</Badge>
+        <div className="grid gap-8">
+          {mockGigJobs.map((job, i) => (
+            <FadeIn key={job.id} direction="up" delay={i * 0.1} duration={0.5}>
+              <div className="rounded-[32px] border border-black/5 bg-white shadow-sm overflow-hidden transition-all hover:shadow-md">
+                <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 bg-black/[0.01] border-b border-black/5">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="text-2xl font-medium text-black tracking-tight">{job.title}</h3>
+                      <Badge variant="outline" className="rounded-full text-[10px] font-medium border-black/10 px-2 py-0">{job.clientName}</Badge>
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100 text-[10px] font-bold uppercase tracking-wider">
+                        <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+                        {job.councilStatus}
+                      </div>
+                    </div>
+                    <p className="text-sm text-black/50 leading-relaxed">{job.description}</p>
+                  </div>
+                  <div className="flex items-center gap-6 bg-white p-4 rounded-2xl border border-black/5 shadow-sm">
+                    <div className="text-right">
+                      <p className="text-xs font-bold uppercase tracking-wider text-black/40">Locked Budget</p>
+                      <p className="text-2xl font-medium tabular-nums text-black tracking-tight">{formatCurrency(job.totalBudget)}</p>
+                    </div>
+                    <div className="h-10 w-px bg-black/5" />
+                    <div className="text-right">
+                      <p className="text-xs font-bold uppercase tracking-wider text-black/40">Released</p>
+                      <p className="text-2xl font-medium tabular-nums text-emerald-600 tracking-tight">{formatCurrency(getCompletedAmount(job))}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6 space-y-8">
+                  <div className="grid md:grid-cols-3 gap-8">
+                    <div className="md:col-span-1 space-y-4">
+                      <div className="p-4 rounded-2xl bg-black/[0.02] border border-black/5 space-y-3">
+                        <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider">
+                          <span className="text-black/40">Overall Progress</span>
+                          <span className="text-black">{Math.round(getProgress(job))}%</span>
                         </div>
-                        <p className="text-sm text-gray-500">{job.description}</p>
+                        <Progress value={getProgress(job)} className="h-1.5 bg-black/5" />
+                        <p className="text-[11px] text-black/40 italic leading-relaxed">
+                          Agent Council has verified {job.milestones.filter(m => m.isCompleted).length} of {job.milestones.length} milestones.
+                        </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-gray-900">{formatCurrency(job.totalBudget)}</p>
-                        <p className="text-sm text-gray-500">Total Budget</p>
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-50/50 border border-amber-100 text-amber-800">
+                        <Zap className="h-4 w-4 shrink-0" />
+                        <p className="text-[11px] font-medium leading-tight">
+                          Next payout triggers automatically upon milestone verification.
+                        </p>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Progress */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Overall Progress: {Math.round(getProgress(job))}%</span>
-                        <span className="text-sm text-gray-500">
-                          {formatCurrency(getCompletedAmount(job))} earned of {formatCurrency(job.totalBudget)}
-                        </span>
-                      </div>
-                      <Progress value={getProgress(job)} className="h-3" />
                     </div>
 
-                    {/* Milestones */}
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-gray-900">Milestones</h4>
-                      {job.milestones.map((milestone, index) => (
-                        <div
-                          key={milestone.id}
+                    <div className="md:col-span-2 grid gap-3">
+                      {job.milestones.map((m, idx) => (
+                        <motion.div 
+                          key={m.id} 
+                          whileHover={{ x: 4 }}
                           className={cn(
-                            'flex items-center gap-4 p-3 rounded-lg border transition-colors',
-                            milestone.isCompleted ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                            'flex items-center justify-between p-4 rounded-2xl border transition-all group',
+                            m.isCompleted ? 'bg-emerald-50/50 border-emerald-100' : 'bg-white border-black/5 hover:border-black/20'
                           )}
                         >
-                          <div className={cn(
-                            'flex h-8 w-8 items-center justify-center rounded-full border-2 flex-shrink-0',
-                            milestone.isCompleted ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 text-gray-400'
-                          )}>
-                            {milestone.isCompleted ? (
-                              <CheckCircle className="h-5 w-5" />
+                          <div className="flex items-center gap-4">
+                            <div className={cn(
+                              'h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold border transition-all',
+                              m.isCompleted ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-black/10 text-black/40 group-hover:border-black/30'
+                            )}>
+                              {m.isCompleted ? <CheckCircle className="h-4 w-4" /> : idx + 1}
+                            </div>
+                            <div>
+                              <p className={cn('text-sm font-medium tracking-tight', m.isCompleted ? 'text-emerald-700 line-through' : 'text-black')}>
+                                {m.name}
+                              </p>
+                              <p className="text-xs text-black/40 font-medium">{m.percentage}% • {formatCurrency(m.amount)}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {m.isCompleted ? (
+                              <Badge className="rounded-full bg-emerald-500 text-white border-0 text-[10px] font-bold uppercase tracking-wider">Settled</Badge>
                             ) : (
-                              <span className="text-sm font-medium">{index + 1}</span>
+                              <Button variant="ghost" size="sm" className="h-8 rounded-lg text-xs font-bold hover:bg-black/5">Verify</Button>
                             )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className={cn('font-medium', milestone.isCompleted ? 'text-green-700 line-through' : 'text-gray-900')}>
-                              {milestone.name}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {milestone.percentage}% • {formatCurrency(milestone.amount)}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {milestone.isCompleted && (
-                              <Badge variant="success" className="text-xs">
-                                <CheckCircle className="h-3 w-3 mr-1" /> Completed
-                              </Badge>
-                            )}
-                            {!milestone.isCompleted && (
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <CheckCircle className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
+                  </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <div className="flex items-center gap-2">
-                        {job.milestones.every(m => m.isCompleted) && job.status !== 'completed' && (
-                          <Button className="flex items-center gap-2 bg-green-600 hover:bg-green-700">
-                            <Send className="h-4 w-4" />
-                            Request Payment
-                          </Button>
-                        )}
+                  <div className="flex items-center justify-between pt-6 border-t border-black/5">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 text-[11px] text-black/40 font-medium">
+                        <ShieldCheck className="h-3 w-3" />
+                        Payouts via <span className="text-black font-bold">PayPal SDK</span>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Button variant="link" className="flex items-center gap-2"><Eye className="h-4 w-4" /> View Details</Button>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Button variant="link" className="flex items-center gap-2"><Edit className="h-4 w-4" /> Edit Milestones</Button>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600 focus:text-red-600 flex items-center gap-2">
-                            <Trash2 className="h-4 w-4" /> Archive Job
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="completed">
-            <div className="text-center py-12">
-              <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">No completed jobs yet</h3>
-              <p className="text-gray-500 mt-1">Complete all milestones to mark jobs as done and trigger payments</p>
-            </div>
-          </TabsContent>
-        </Tabs>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full hover:bg-black/5"><MoreHorizontal className="h-4 w-4" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="rounded-2xl p-2">
+                        <DropdownMenuItem className="cursor-pointer flex items-center gap-2 rounded-lg px-3 py-2 text-sm"><Eye className="h-4 w-4" /> Ledger Details</DropdownMenuItem>
+                        <DropdownMenuItem className="cursor-pointer flex items-center gap-2 rounded-lg px-3 py-2 text-sm"><Edit className="h-4 w-4" /> Adjust Terms</DropdownMenuItem>
+                        <DropdownMenuSeparator className="my-1" />
+                        <DropdownMenuItem className="text-red-600 cursor-pointer flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium"><Trash2 className="h-4 w-4" /> Archive Contract</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+          ))}
+        </div>
       </div>
     </div>
   );

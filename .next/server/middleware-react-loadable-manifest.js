@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}";
+self.__REACT_LOADABLE_MANIFEST="{\"components\\\\landing\\\\liquid-glass.tsx -> liquid-gl\":{\"id\":\"components\\\\landing\\\\liquid-glass.tsx -> liquid-gl\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_liquid-gl_liquidGL_js.js\"]}}"

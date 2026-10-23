@@ -8,7 +8,7 @@ import { Mail, Lock, ArrowRight, CheckCircle, AlertCircle, Zap, Shield, KeyRound
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const formRef = useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<string>("");

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,7 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
       <div
         ref={ref}
         className={cn(
-          "flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex cursor-pointer items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         {...props}
@@ -65,7 +65,7 @@ const SelectContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
       <div
         ref={ref}
         className={cn(
-          "absolute z-50 mt-2 max-h-[var(--radix-select-content-available-height)] overflow-hidden rounded-md border bg-white shadow-lg py-1 text-sm outline-none [data-state=open]:animate-in [data-state=closed]:animate-out [data-state=closed]:fade-out-0 [data-state=open]:fade-in-0 [data-state=closed]:zoom-out-95 [data-state=open]:zoom-in-95 [data-side=bottom]:slide-in-from-top-2 [data-side=left]:slide-in-from-right-2 [data-side=right]:slide-in-from-left-2 [data-side=top]:slide-in-from-bottom-2 origin-[--radix-select-content-transform-origin]",
+          "absolute z-50 mt-2 max-h-[var(--radix-select-content-available-height)] overflow-hidden rounded-md border bg-white py-1 text-sm outline-none [data-state=open]:animate-in [data-state=closed]:animate-out [data-state=closed]:fade-out-0 [data-state=open]:fade-in-0 [data-state=closed]:zoom-out-95 [data-state=open]:zoom-in-95 [data-side=bottom]:slide-in-from-top-2 [data-side=left]:slide-in-from-right-2 [data-side=right]:slide-in-from-left-2 [data-side=top]:slide-in-from-bottom-2 origin-[--radix-select-content-transform-origin]",
           className
         )}
         {...props}

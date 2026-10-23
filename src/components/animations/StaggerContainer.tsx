@@ -25,7 +25,7 @@ export default function StaggerContainer({
   const ref = useRef<HTMLDivElement>(null);
   const childrenArray = Array.isArray(children) ? children : [children];
 
-  useEffect(() => {
+useEffect(() => {
     if (!ref.current) return;
 
     const ctx = gsap.context(() => {
@@ -50,7 +50,9 @@ export default function StaggerContainer({
         fromVars.x = 40;
       }
 
-      gsap.from(ref.current.children, fromVars);
+      if (ref.current) {
+        gsap.from(ref.current.children, fromVars);
+      }
     });
 
     return () => ctx.revert();

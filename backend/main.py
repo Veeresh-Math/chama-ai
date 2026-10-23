@@ -1,10 +1,13 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, AsyncGenerator
 import openai
 import paypalrestsdk
 from datetime import datetime
 import random
+import json
+import asyncio
 from fastapi.middleware.cors import CORSMiddleware
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -64,7 +67,42 @@ class AgentCouncil:
             "Treasury": "Verify fund availability and stablecoin (PYUSD) liquidity."
         }
 
+    async def deliberate_stream(self, transaction_type: str, details: Dict) -> AsyncGenerator[str, None]:
+        results = {}
+        consensus = True
+        
+        for agent_name, role in self.agents.items():
+            # Simulate the agent "thinking" for a bit to make the UI feel real
+            await asyncio.sleep(1.5)
+            
+            prompt = f"Role: {role}\nTransaction: {transaction_type}\nDetails: {details}\n\nVerdict: [APPROVE/REJECT] and a one-sentence reason. Keep it professional and concise."
+            response = self.llm.invoke(prompt)
+            verdict = "APPROVE" if "APPROVE" in response.content.upper() else "REJECT"
+            
+            results[agent_name] = {"verdict": verdict, "reason": response.content}
+            if verdict == "REJECT":
+                consensus = False
+            
+            # Yield the result as a JSON string for the frontend to parse
+            yield json.dumps({
+                "agent": agent_name,
+                "verdict": verdict,
+                "reason": response.content,
+                "status": "complete"
+            }) + "\n"
+
+        # Final consensus result
+        await asyncio.sleep(1)
+        yield json.dumps({
+            "agent": "Council",
+            "verdict": "CONSENSUS" if consensus else "REJECTED",
+            "reason": "Consensus reached. All agents agree to proceed." if consensus else "Consensus failed. Transaction blocked.",
+            "status": "final"
+        }) + "\n"
+
     def deliberate(self, transaction_type: str, details: Dict) -> Dict:
+        # Keep the synchronous version for the existing /distribute endpoint
+        # This is a wrapper around the logic but not using the async generator
         results = {}
         consensus = True
         for agent_name, role in self.agents.items():
@@ -160,6 +198,22 @@ async def create_community(req: CommunityRequest):
 @app.get("/communities")
 async def get_communities():
     return state["communities"]
+
+@app.get("/community/distribute-stream/{community_id}")
+async def distribute_stream(community_id: int):
+    if not state["connected"]: raise HTTPException(status_code=401, detail="System not connected")
+
+    comm = next((c for c in state["communities"] if c["id"] == community_id), None)
+    if not comm: raise HTTPException(status_code=404, detail="Community not found")
+
+    details = {"community": comm["name"], "amount": comm["total_funds"], "members": len(comm["members"])}
+    
+    async def event_generator():
+        async for event in state["council"].deliberate_stream("Community Payout", details):
+            yield f"data: {event}\n\n"
+            await asyncio.sleep(0.1)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @app.post("/community/distribute/{community_id}")
 async def distribute_funds(community_id: int):

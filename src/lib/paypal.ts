@@ -1,7 +1,7 @@
 import paypal from 'paypal-rest-sdk';
 
 paypal.configure({
-  mode: process.env.PAYPAL_MODE || 'sandbox',
+  mode: process.env.PAYPAL_MODE === 'live' ? 'live' : 'sandbox',
   client_id: process.env.PAYPAL_CLIENT_ID!,
   client_secret: process.env.PAYPAL_CLIENT_SECRET!,
 });
@@ -22,7 +22,10 @@ export async function createPayment({
   returnUrl: string;
   cancelUrl: string;
   payerId?: string;
-}) {
+}): Promise<{
+  id: string;
+  links: Array<{ rel: string; href: string }>;
+}> {
   return new Promise((resolve, reject) => {
     const payment = {
       intent: 'sale',
@@ -102,6 +105,14 @@ export function verifyWebhookSignature(
     );
   });
 }
+interface PayoutResponse {
+  batch_header: {
+    payout_batch_id: string;
+    sender_batch_id: string;
+    email_subject: string;
+  };
+}
+
 export async function createSplitPayment({
   senderBatchId,
   emailSubject,
@@ -115,8 +126,8 @@ export async function createSplitPayment({
     receiver: string;
     note?: string;
   }>;
-}) {
-  return new Promise((resolve, reject) => {
+}): Promise<PayoutResponse> {
+  return new Promise<PayoutResponse>((resolve, reject) => {
     const payout = {
       sender_batch_header: { sender_batch_id: senderBatchId, email_subject: emailSubject },
       items,

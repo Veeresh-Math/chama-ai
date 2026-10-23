@@ -1,0 +1,158 @@
+{
+  "theme": {
+    "extend": {
+      "colors": {
+        "primary": "#0f0f0f",
+        "primary-inverse": "#ffffff",
+        "surface": "#ffffff",
+        "surface-cream": "#eaeaea",
+        "surface-muted": "#e2e2e2",
+        "surface-dark": "#151515",
+        "surface-raised-dark": "#1a1a1a",
+        "on-primary": "#ffffff",
+        "on-surface": "#0f0f0f",
+        "text-strong": "#0f0f0f",
+        "text-muted": "#868686",
+        "link": "#0099ff",
+        "success-container": "#e9fdf7",
+        "success": "#007155",
+        "destructive": "#dc2626",
+        "paypal": "#0070e0"
+      },
+      "fontFamily": {
+        "headline-display": [
+          "Switzer"
+        ],
+        "headline-xl": [
+          "Switzer"
+        ],
+        "headline-md": [
+          "Switzer"
+        ],
+        "headline-sm": [
+          "Switzer"
+        ],
+        "accent-serif": [
+          "Instrument Serif"
+        ],
+        "money-xl": [
+          "Switzer"
+        ],
+        "body-lg": [
+          "Switzer"
+        ],
+        "body-md": [
+          "Switzer"
+        ],
+        "body-sm": [
+          "Switzer"
+        ],
+        "label-lg": [
+          "Switzer"
+        ],
+        "label-sm": [
+          "Switzer"
+        ],
+        "badge": [
+          "Switzer"
+        ]
+      },
+      "fontSize": {
+        "headline-display": [
+          "96px",
+          {
+            "letterSpacing": "-0.03em",
+            "fontWeight": "400"
+          }
+        ],
+        "headline-xl": [
+          "64px",
+          {
+            "letterSpacing": "-0.045em",
+            "fontWeight": "500"
+          }
+        ],
+        "headline-md": [
+          "32px",
+          {
+            "letterSpacing": "-0.02em",
+            "fontWeight": "500"
+          }
+        ],
+        "headline-sm": [
+          "20px",
+          {
+            "letterSpacing": "-0.03em",
+            "fontWeight": "500"
+          }
+        ],
+        "money-xl": [
+          "40px",
+          {
+            "letterSpacing": "-0.03em",
+            "fontWeight": "500"
+          }
+        ],
+        "body-lg": [
+          "16px",
+          {
+            "fontWeight": "400"
+          }
+        ],
+        "body-md": [
+          "15px",
+          {
+            "fontWeight": "400"
+          }
+        ],
+        "body-sm": [
+          "13px",
+          {
+            "fontWeight": "400"
+          }
+        ],
+        "label-lg": [
+          "15px",
+          {
+            "letterSpacing": "-0.02em",
+            "fontWeight": "500"
+          }
+        ],
+        "label-sm": [
+          "13px",
+          {
+            "fontWeight": "500"
+          }
+        ],
+        "badge": [
+          "14px",
+          {
+            "fontWeight": "500"
+          }
+        ]
+      },
+      "borderRadius": {
+        "sm": "4px",
+        "md": "8px",
+        "lg": "12px",
+        "xl": "24px",
+        "section": "40px",
+        "full": "9999px"
+      },
+      "spacing": {
+        "xs": "4px",
+        "sm": "8px",
+        "md": "16px",
+        "lg": "24px",
+        "xl": "32px",
+        "2xl": "48px",
+        "3xl": "64px",
+        "4xl": "96px",
+        "section-gap": "160px",
+        "base": "8px",
+        "gutter": "60px",
+        "container-max": "1320px"
+      }
+    }
+  }
+}

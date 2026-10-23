@@ -20,6 +20,19 @@ import {
 
 gsap.registerPlugin(ScrollTrigger);
 
+const IconComponents = {
+  Users,
+  Shield,
+  CreditCard,
+  Globe,
+  Lock,
+  TrendingUp,
+  Zap,
+  ArrowRight,
+  CheckCircle,
+  Sparkles,
+} as const;
+
 export default function LandingPage() {
   const router = useRouter();
   const heroRef = useRef<HTMLDivElement>(null);
@@ -118,39 +131,39 @@ export default function LandingPage() {
     { value: "24/7", label: "Support Available" },
   ];
 
-  const features = [
+const features = [
     {
-      icon: Users,
+      icon: "Users",
       title: "Trust Circles",
       description:
         "Build savings communities with built-in reputation scoring and automated distributions.",
     },
     {
-      icon: Shield,
+      icon: "Shield",
       title: "Secure Escrow",
       description:
         "Milestone-based contracts with multisig releases and dispute resolution.",
     },
     {
-      icon: CreditCard,
+      icon: "CreditCard",
       title: "Instant Payouts",
       description:
         "Real-time settlements with multiple payment rails and currency support.",
     },
     {
-      icon: Globe,
+      icon: "Globe",
       title: "Global Reach",
       description:
         "Cross-border communities with localized compliance and currency handling.",
     },
     {
-      icon: Lock,
+      icon: "Lock",
       title: "Bank-Grade Security",
       description:
         "End-to-end encryption, hardware wallet support, and audit trails.",
     },
     {
-      icon: TrendingUp,
+      icon: "TrendingUp",
       title: "Analytics Dashboard",
       description:
         "Real-time insights into community health, cash flow, and member activity.",
@@ -205,8 +218,8 @@ export default function LandingPage() {
                 onClick={handleGetStarted}
                 className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-paypalBlue to-electricViolet rounded-2xl font-semibold text-lg hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-paypalBlue/25"
               >
-                Start Building Free
-                <ArrowRight size={20} className="inline-block ml-2" />
+Start Building Free
+                <ArrowRight size={20} className="inline-block ml-2" aria-hidden="true" />
               </button>
               <Link
                 href="/login"
@@ -215,13 +228,13 @@ export default function LandingPage() {
                 Watch Demo
               </Link>
             </div>
-            <div className="hero-trust flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500">
+<div className="hero-trust flex flex-wrap items-center justify-center gap-8 text-sm text-gray-500">
               <div className="flex items-center gap-2">
-                <CheckCircle size={16} className="text-green-500" />
+                <CheckCircle size={16} className="text-green-500" aria-hidden="true" />
                 <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle size={16} className="text-green-500" />
+                <CheckCircle size={16} className="text-green-500" aria-hidden="true" />
                 <span>14-day free trial</span>
               </div>
               <div className="flex items-center gap-2">
@@ -262,18 +275,21 @@ export default function LandingPage() {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="feature-card glass-card p-8 hover:border-paypalBlue/50 transition-all duration-300 group"
-                >
-                  <div className="w-14 h-14 bg-gradient-to-br from-paypalBlue/20 to-electricViolet/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                    <feature.icon size={28} className="text-paypalBlue" />
+{features.map((feature, index) => {
+                const IconComponent = IconComponents[feature.icon as keyof typeof IconComponents];
+                return (
+                  <div
+                    key={index}
+                    className="feature-card glass-card p-8 hover:border-paypalBlue/50 transition-all duration-300 group"
+                  >
+                    <div className="w-14 h-14 bg-gradient-to-br from-paypalBlue/20 to-electricViolet/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <IconComponent size={28} className="text-paypalBlue" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                    <p className="text-gray-400 leading-relaxed">{feature.description}</p>
                   </div>
-                  <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                  <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -281,7 +297,7 @@ export default function LandingPage() {
         <section ref={ctaRef} className="py-24 px-6 bg-gradient-to-br from-paypalBlue/10 via-transparent to-electricViolet/10">
           <div className="max-w-4xl mx-auto text-center cta-content">
             <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-6 py-2 mb-6">
-              <Sparkles size={16} className="text-paypalBlue" />
+              <Sparkles size={16} className="text-paypalBlue" aria-hidden="true" />
               <span className="text-sm font-medium text-gray-300">New: AI Financial Copilot</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -300,8 +316,8 @@ export default function LandingPage() {
                 onClick={handleGetStarted}
                 className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-paypalBlue to-electricViolet rounded-2xl font-semibold text-lg hover:opacity-90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-paypalBlue/25"
               >
-                Create Free Account
-                <ArrowRight size={20} className="inline-block ml-2" />
+Create Free Account
+                <ArrowRight size={20} className="inline-block ml-2" aria-hidden="true" />
               </button>
               <Link
                 href="/login"
@@ -320,7 +336,7 @@ export default function LandingPage() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-br from-paypalBlue to-electricViolet rounded-xl flex items-center justify-center">
-                  <Zap size={16} className="text-white" />
+                  <Zap size={16} className="text-white" aria-hidden="true" />
                 </div>
                 <span className="font-bold text-lg">PayPal AI Hub</span>
               </div>
@@ -358,7 +374,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-500 text-sm">© 2024 PayPal AI Hub. All rights reserved.</p>
+            <p className="text-gray-500 text-sm">ï¿½ 2024 PayPal AI Hub. All rights reserved.</p>
             <div className="flex items-center gap-6">
               <a href="#" className="text-gray-500 hover:text-white transition-colors">
                 Privacy

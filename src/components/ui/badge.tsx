@@ -10,7 +10,7 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     const variants = {
-      default: 'bg-primary-100 text-primary-700',
+      default: 'bg-black/5 text-black',
       secondary: 'bg-gray-100 text-gray-700',
       destructive: 'bg-red-100 text-red-700',
       outline: 'border border-gray-300 bg-transparent',
@@ -22,7 +22,7 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
       <span
         ref={ref}
         className={cn(
-          'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors',
+          'inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-semibold transition-colors',
           variants[variant],
           className
         )}

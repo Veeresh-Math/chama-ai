@@ -283,8 +283,9 @@ export default function CommunitiesPage() {
               </div>
             </FadeIn>
           ))}
+        </TabsContent>
+
         </Tabs>
       </div>
-    </div>
   );
 }

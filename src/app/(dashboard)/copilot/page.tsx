@@ -5,6 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatRelativeTime } from '@/lib/utils';
 import { FadeIn } from '@/components/animations';
 import { motion } from 'framer-motion';
@@ -19,6 +24,17 @@ import {
   ArrowUpRight,
   CreditCard,
   Activity,
+  MessageSquare,
+  Lightbulb,
+  Vote,
+  Clock,
+  CheckCircle2,
+  Rocket,
+  Users,
+  BarChart3,
+  Search,
+  ThumbsUp,
+  Eye,
 } from 'lucide-react';
 
 const mockTransactions = [
@@ -49,19 +65,121 @@ const mockAgentSuggestions = [
   },
 ];
 
+// User feedback/feature request system - let real people tell us what they need
+interface FeatureRequest {
+  id: string;
+  title: string;
+  description: string;
+  author: { name: string; avatar: string };
+  votes: number;
+  status: 'proposed' | 'simulating' | 'development' | 'launched';
+  simulationScore?: number; // MiroFish simulation impact score
+  createdAt: string;
+  comments: number;
+}
+
+const mockFeatureRequests: FeatureRequest[] = [
+  {
+    id: '1',
+    title: 'Mobile Money Integration (M-Pesa)',
+    description: 'Need to support M-Pesa payments for Kenyan community members who don\'t have bank accounts',
+    author: { name: 'Jane W.', avatar: '' },
+    votes: 24,
+    status: 'simulating',
+    simulationScore: 87,
+    createdAt: '2026-10-15',
+    comments: 8
+  },
+  {
+    id: '2',
+    title: 'Loan eligibility calculator',
+    description: 'Let members calculate how much they can borrow based on their contribution history',
+    author: { name: 'Mike T.', avatar: '' },
+    votes: 18,
+    status: 'proposed',
+    simulationScore: 65,
+    createdAt: '2026-10-18',
+    comments: 5
+  },
+  {
+    id: '3',
+    title: 'Multi-chama membership dashboard',
+    description: 'I\'m in 3 chamas - need a unified view of all my contributions across communities',
+    author: { name: 'Sarah K.', avatar: '' },
+    votes: 15,
+    status: 'development',
+    simulationScore: 92,
+    createdAt: '2026-10-10',
+    comments: 12
+  },
+  {
+    id: '4',
+    title: 'WhatsApp reminders for contributions',
+    description: 'Send contribution reminders via WhatsApp instead of just email - most people check WhatsApp daily',
+    author: { name: 'David L.', avatar: '' },
+    votes: 31,
+    status: 'launched',
+    simulationScore: 95,
+    createdAt: '2026-10-01',
+    comments: 15
+  }
+];
+
 export default function CopilotPage() {
   const [showTransactionModal, setShowTransactionModal] = React.useState(false);
+  const [showRequestModal, setShowRequestModal] = React.useState(false);
   const [agentResponse, setAgentResponse] = React.useState('');
   const [isAgentThinking, setIsAgentThinking] = React.useState(false);
+  const [featureRequests, setFeatureRequests] = React.useState<FeatureRequest[]>(mockFeatureRequests);
+  const [newRequest, setNewRequest] = React.useState({ title: '', description: '' });
+  const [activeTab, setActiveTab] = React.useState('assistant');
+
+  // MiroFish simulation - when a user submits a feature request, we run it through MiroFish to predict impact
+  const runMiroFishSimulation = async (request: { title: string; description: string }) => {
+    // This would call your MiroFish backend to simulate the feature's impact
+    console.log('🐟 MiroFish running simulation for:', request.title);
+    // Return a simulated impact score (0-100)
+    return Math.floor(Math.random() * 40) + 60; // 60-99 score
+  };
 
   const handleAgentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAgentResponse('Consulting Agent Council...');
     setIsAgentThinking(true);
     setTimeout(() => {
-      setAgentResponse(`Council Verdict: Your current savings rate is 60%. We recommend allocating 20% of surplus to the \"High-Yield T-Bill\" pool for an estimated +4.2% APY.`);
+      setAgentResponse(`Council Verdict: Your current savings rate is 60%. We recommend allocating 20% of surplus to the "High-Yield T-Bill" pool for an estimated +4.2% APY.`);
       setIsAgentThinking(false);
     }, 2000);
+  };
+
+  const handleFeatureRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Run MiroFish simulation on the new feature request
+    const simulationScore = await runMiroFishSimulation(newRequest);
+    
+    const newFeatureRequest: FeatureRequest = {
+      id: Date.now().toString(),
+      title: newRequest.title,
+      description: newRequest.description,
+      author: { name: 'You', avatar: '' },
+      votes: 1,
+      status: 'simulating', // MiroFish is simulating this feature's impact
+      simulationScore,
+      createdAt: new Date().toISOString().split('T')[0],
+      comments: 0
+    };
+    
+    setFeatureRequests([newFeatureRequest, ...featureRequests]);
+    setNewRequest({ title: '', description: '' });
+    setShowRequestModal(false);
+  };
+
+  const handleVote = (id: string) => {
+    setFeatureRequests(requests => 
+      requests.map(req => 
+        req.id === id ? { ...req, votes: req.votes + 1 } : req
+      )
+    );
   };
 
   const totalIncome = mockTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
@@ -76,22 +194,65 @@ export default function CopilotPage() {
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-black/40 mb-2">
               <Brain className="h-3 w-3 text-violet-600" />
-              Treasury Command Center
+              Community Innovation Hub
             </div>
             <h1 className="text-4xl font-medium tracking-tight text-black sm:text-5xl">
-              Financial <span className="font-serif italic text-black/70">Copilot.</span>
+              Build <span className="font-serif italic text-black/70">Together.</span>
             </h1>
             <p className="text-black/50 max-w-md text-sm leading-relaxed">
-              AI-powered treasury management and behavioral insights. Managed by the Agent Council.
+              Real people tell us what they need. MiroFish AI simulates impact. We build what matters most.
             </p>
           </div>
-          <Dialog open={showTransactionModal} onOpenChange={setShowTransactionModal}>
-            <DialogTrigger asChild>
-              <Button className="rounded-full px-6 h-11 bg-black text-white hover:bg-black/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-black/10">
-                <Plus className="h-4 w-4 mr-2" />
-                Log Transaction
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-3">
+            <Dialog open={showRequestModal} onOpenChange={setShowRequestModal}>
+              <DialogTrigger asChild>
+                <Button className="rounded-full px-6 h-11 bg-black text-white hover:bg-black/90 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-black/10">
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  Request a Feature
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="rounded-[32px] sm:max-w-[520px]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-medium tracking-tight">Tell us what you need</DialogTitle>
+                  <p className="text-black/50 text-sm">Share a feature request from real users - MiroFish will simulate its impact</p>
+                </DialogHeader>
+                <form onSubmit={handleFeatureRequest} className="space-y-6 py-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Feature title</label>
+                    <Input 
+                      placeholder="What do you need to build?" 
+                      value={newRequest.title}
+                      onChange={(e) => setNewRequest({...newRequest, title: e.target.value})}
+                      required
+                      className="h-12 rounded-2xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Describe the need</label>
+                    <Textarea 
+                      placeholder="Explain how real people would use this feature..." 
+                      value={newRequest.description}
+                      onChange={(e) => setNewRequest({...newRequest, description: e.target.value})}
+                      required
+                      className="min-h-[100px] rounded-2xl resize-none"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" className="w-full rounded-2xl h-12 bg-black text-white">
+                      <Rocket className="h-4 w-4 mr-2" />
+                      Submit & Run MiroFish Simulation
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+            <Dialog open={showTransactionModal} onOpenChange={setShowTransactionModal}>
+              <DialogTrigger asChild>
+                <Button variant="secondary" className="rounded-full px-6 h-11 bg-black/5 text-black hover:bg-black/10 transition-all">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Log Transaction
+                </Button>
+              </DialogTrigger>
             <DialogContent className="rounded-[32px] sm:max-w-[480px]">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-medium tracking-tight">Record Movement</DialogTitle>
@@ -115,6 +276,7 @@ export default function CopilotPage() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
       </FadeIn>
 

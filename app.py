@@ -7,7 +7,10 @@ import plotly.express as px
 from langchain.tools import tool
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.agents import create_tool_calling_agent, AgentExecutor
+try:
+    from langchain_core.agents import create_tool_calling_agent, AgentExecutor
+except ImportError:
+    from langchain.agents import create_tool_calling_agent, AgentExecutor
 from typing import List, Dict, Any, Optional
 import random
 

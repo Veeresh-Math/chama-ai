@@ -8,11 +8,6 @@ import { Container, CtaLink } from './primitives';
 export default function FinalCta() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
 
-  React.useEffect(() => {
-    if (localStorage.getItem('chamaai_logged_in') === 'true') {
-      setIsLoggedIn(true);
-    }
-  }, []);
 
   return (
     <section className="pb-28 pt-14 sm:pb-36">

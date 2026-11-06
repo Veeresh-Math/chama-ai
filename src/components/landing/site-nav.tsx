@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -19,11 +19,10 @@ export default function SiteNav() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const router = useRouter();
 
-  // Check login status on mount
-  React.useEffect(() => {
-    const loggedIn = localStorage.getItem('chamaai_logged_in') === 'true';
-    setIsLoggedIn(loggedIn);
-  }, []);
+  const setLoggedIn = (bool: boolean) => {
+    localStorage.setItem('chamaai_logged_in', JSON.stringify(bool));
+    setIsLoggedIn(bool);
+  };
 
   // Handle logout
   const handleLogout = () => {
@@ -40,6 +39,15 @@ export default function SiteNav() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
+
+  React.useEffect(() => {
+    const checkAuth = () => {
+      setIsLoggedIn(localStorage.getItem('chamaai_logged_in') === 'true');
+    };
+    checkAuth();
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
+  }, []);
 
   return (
     <header className="fixed inset-x-0 top-[22px] z-50 flex flex-col items-center gap-2 px-4 sm:top-[30px]">

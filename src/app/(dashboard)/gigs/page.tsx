@@ -260,6 +260,5 @@ export default function GigsPage() {
           ))}
         </div>
       </div>
-    </div>
   );
 }

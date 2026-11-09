@@ -15,60 +15,118 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatCurrency, formatRelativeTime, cn } from '@/lib/utils';
 import { FadeIn } from '@/components/animations';
 import {
-  Users,
-  Plus,
-  DollarSign,
-  TrendingUp,
-  Shield,
-  MoreHorizontal,
-  Brain,
-  RefreshCw,
-  Eye,
-  Trash2,
-  Edit,
+  Users, Plus, DollarSign, TrendingUp, Shield, MoreHorizontal, Brain, RefreshCw, Eye, Trash2, Edit,
 } from 'lucide-react';
 
-const mockCommunities = [
-  {
-    id: '1',
-    name: 'Nairobi Tech Savings',
-    description: 'Monthly savings for software developers',
-    monthlyContribution: 100,
-    trustScore: 87,
-    totalFunds: 2400,
-    memberCount: 12,
-    members: [
-      { id: '1', name: 'Alice W.', sharePercentage: 8.33, totalContributed: 1200, trustScore: 92 },
-      { id: '2', name: 'Bob M.', sharePercentage: 8.33, totalContributed: 1100, trustScore: 88 },
-      { id: '3', name: 'Carol K.', sharePercentage: 8.33, totalContributed: 1000, trustScore: 85 },
-    ],
-    contributions: [
-      { id: '1', amount: 100, status: 'completed', createdAt: new Date('2024-10-01') },
-    ],
-    distributions: [
-      { id: '1', totalAmount: 500, status: 'completed', createdAt: new Date('2024-08-15'), triggeredBy: 'auto' },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Women Entrepreneurs Circle',
-    description: 'Supporting women-led businesses',
-    monthlyContribution: 50,
-    trustScore: 92,
-    totalFunds: 800,
-    memberCount: 8,
-    members: [
-      { id: '4', name: 'Diana R.', sharePercentage: 12.5, totalContributed: 600, trustScore: 95 },
-      { id: '5', name: 'Eve L.', sharePercentage: 12.5, totalContributed: 550, trustScore: 90 },
-    ],
-    contributions: [],
-    distributions: [],
-  },
-];
+interface Member {
+  id: string;
+  name: string;
+  sharePercentage: string;
+  totalContributed: string;
+  trustScore: number;
+  isActive: boolean;
+  joinedAt: string;
+}
+
+interface Community {
+  id: string;
+  name: string;
+  description: string | null;
+  monthlyContribution: string;
+  currency: string;
+  autoDistribute: boolean;
+  trustScore: number;
+  totalFunds: string;
+  memberCount: number;
+  members: Member[];
+  contributions: Array<{ id: string; amount: string; status: string; contributedAt: string }>;
+  distributions: Array<{ id: string; totalAmount: string; status: string; triggeredBy: string; createdAt: string | null; completedAt: string | null }>;
+}
+
+interface CommunityFormData {
+  name: string;
+  monthlyContribution: number;
+  currency: string;
+  description: string;
+  memberEmails: string[];
+  autoDistribute: boolean;
+}
 
 export default function CommunitiesPage() {
   const [showCreateDialog, setShowCreateDialog] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState('overview');
+  const [communities, setCommunities] = React.useState<Community[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [creating, setCreating] = React.useState(false);
+
+  React.useEffect(() => {
+    loadCommunities();
+  }, []);
+
+  async function loadCommunities() {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/communities', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to load communities');
+      const data = await res.json();
+      setCommunities(data.communities || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load communities');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleCreate(data: CommunityFormData) {
+    setCreating(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/communities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: data.name,
+          description: data.description,
+          monthlyContribution: data.monthlyContribution,
+          currency: data.currency,
+          autoDistribute: data.autoDistribute,
+          memberEmails: data.memberEmails,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to create collective');
+      const result = await res.json();
+      setCommunities(prev => [result.community, ...prev]);
+      setShowCreateDialog(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create collective');
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 rounded-full border-3 border-black/5 border-t-current animate-spin" />
+          <p className="text-black/50">Loading collectives…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && communities.length === 0) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center text-center">
+        <h2 className="text-xl font-medium text-black">{error}</h2>
+        <Button onClick={() => { setError(null); setLoading(true); loadCommunities(); }} className="mt-4 rounded-xl">
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -83,29 +141,47 @@ export default function CommunitiesPage() {
           </div>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
-              <Button className="rounded-xl px-5">
+              <Button disabled={creating} className="rounded-xl px-5">
                 <Plus className="h-4 w-4 mr-2" />
-                Create Collective
+                {creating ? 'Creating…' : 'Create Collective'}
               </Button>
             </DialogTrigger>
             <DialogContent className="rounded-3xl max-w-2xl">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-medium">New Collective</DialogTitle>
               </DialogHeader>
-              <form className="space-y-6 py-4">
+              <form
+                className="space-y-6 py-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  handleCreate({
+                    name: formData.get('name') as string,
+                    monthlyContribution: Number(formData.get('monthlyContribution')),
+                    currency: formData.get('currency') as string,
+                    description: formData.get('description') as string,
+                    memberEmails: (formData.get('memberEmails') as string).split(',').map(e => e.trim()).filter(Boolean),
+                    autoDistribute: formData.get('autoDistribute') === 'on',
+                  });
+                }}
+              >
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-black/60">Collective Name</label>
-                    <Input className="rounded-xl border-black/10" placeholder="e.g., Nairobi Tech Savings" />
+                    <Input name="name" className="rounded-xl border-black/10" placeholder="e.g., Nairobi Tech Savings" required />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-black/60">Monthly Contribution</label>
-                    <Input type="number" className="rounded-xl border-black/10" placeholder="100" />
+                    <Input name="monthlyContribution" type="number" className="rounded-xl border-black/10" placeholder="100" required />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-black/60">Purpose & Vision</label>
-                  <Textarea className="rounded-xl border-black/10" placeholder="What is this collective saving for?" rows={3} />
+                  <Textarea name="description" className="rounded-xl border-black/10" placeholder="What is this collective saving for?" rows={3} />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-black/60">Member Emails (comma-separated)</label>
+                    <Input name="memberEmails" className="rounded-xl border-black/10" placeholder="alice@example.com, bob@example.com" required />
                 </div>
                 <div className="flex items-center gap-3 p-4 rounded-2xl bg-violet-50 border border-violet-100">
                   <div className="p-2 rounded-lg bg-violet-100 text-violet-600">
@@ -115,11 +191,14 @@ export default function CommunitiesPage() {
                     <p className="text-sm font-semibold text-violet-900">Agentic Distribution</p>
                     <p className="text-xs text-violet-700/80">Allow the Agent Council to autonomously distribute funds based on milestones.</p>
                   </div>
-                  <input type="checkbox" defaultChecked className="h-5 w-5 accent-violet-600" />
+                  <input name="autoDistribute" type="checkbox" defaultChecked className="h-5 w-5 accent-violet-600" />
                 </div>
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{error}</div>
+                )}
                 <DialogFooter>
-                  <Button variant="ghost" onClick={() => setShowCreateDialog(false)} className="rounded-xl">Cancel</Button>
-                  <Button className="rounded-xl px-6">Launch Collective</Button>
+                  <Button type="button" variant="ghost" onClick={() => setShowCreateDialog(false)} className="rounded-xl">Cancel</Button>
+                  <Button type="submit" disabled={creating} className="rounded-xl px-6">{creating ? 'Creating…' : 'Launch Collective'}</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -130,10 +209,9 @@ export default function CommunitiesPage() {
       {/* High-Density Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'Active Collectives', value: mockCommunities.length, icon: Users, color: 'text-blue-600' },
-          { label: 'Total Managed', value: formatCurrency(mockCommunities.reduce((sum, c) => sum + c.totalFunds, 0)), icon: DollarSign, color: 'text-emerald-600' },
-          { label: 'Avg Trust Score', value: `${Math.round(mockCommunities.reduce((sum, c) => sum + c.trustScore, 0) / mockCommunities.length)}%`, icon: Shield, color: 'text-violet-600' },
-          { label: 'Total Members', value: mockCommunities.reduce((sum, c) => sum + c.memberCount, 0), icon: TrendingUp, color: 'text-orange-600' },
+          { label: 'Active Collectives', value: communities.length, icon: Users, color: 'text-blue-600' },
+          { label: 'Total Managed', value: formatCurrency(communities.reduce((sum, c) => sum + Number(c.totalFunds), 0)), icon: DollarSign, color: 'text-emerald-600' },          { label: 'Avg Trust Score', value: communities.length > 0 ? `${Math.round(communities.reduce((sum, c) => sum + c.trustScore, 0) / communities.length)}%` : '0%', icon: Shield, color: 'text-violet-600' },
+          { label: 'Total Members', value: communities.reduce((sum, c) => sum + c.memberCount, 0), icon: TrendingUp, color: 'text-orange-600' },
         ].map((stat, i) => (
           <FadeIn key={i} direction="up" delay={i * 0.1} duration={0.5}>
             <div className="rounded-3xl border border-black/5 bg-white p-6 transition-all hover:border-black/10 shadow-sm">
@@ -149,7 +227,7 @@ export default function CommunitiesPage() {
             </div>
           </FadeIn>
         ))}
-      </div >
+      </div>
 
       {/* Collective Management */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -160,7 +238,7 @@ export default function CommunitiesPage() {
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {mockCommunities.map((community, i) => (
+            {communities.map((community, i) => (
               <FadeIn key={community.id} direction="up" delay={i * 0.1} duration={0.5}>
                 <div className="group rounded-3xl border border-black/5 bg-white overflow-hidden transition-all hover:border-black/20 shadow-sm">
                   <div className={cn('h-1.5', community.trustScore > 80 ? 'bg-emerald-500' : 'bg-amber-500')} />
@@ -177,7 +255,7 @@ export default function CommunitiesPage() {
 
                     <div className="grid grid-cols-3 gap-3 text-center">
                       <div className="p-3 rounded-2xl bg-black/5">
-                        <p className="text-lg font-medium tabular-nums text-black">{formatCurrency(community.totalFunds)}</p>
+                        <p className="text-lg font-medium tabular-nums text-black">{formatCurrency(Number(community.totalFunds))}</p>
                         <p className="text-[10px] uppercase tracking-wider text-black/40 font-semibold">Pool</p>
                       </div>
                       <div className="p-3 rounded-2xl bg-black/5">
@@ -185,7 +263,7 @@ export default function CommunitiesPage() {
                         <p className="text-[10px] uppercase tracking-wider text-black/40 font-semibold">Members</p>
                       </div>
                       <div className="p-3 rounded-2xl bg-black/5">
-                        <p className="text-lg font-medium tabular-nums text-black">{formatCurrency(community.monthlyContribution)}</p>
+                        <p className="text-lg font-medium tabular-nums text-black">{formatCurrency(Number(community.monthlyContribution))}</p>
                         <p className="text-[10px] uppercase tracking-wider text-black/40 font-semibold">Monthly</p>
                       </div>
                     </div>
@@ -215,13 +293,13 @@ export default function CommunitiesPage() {
         </TabsContent>
 
         <TabsContent value="details" className="space-y-6">
-          {mockCommunities.map((community) => (
+          {communities.map((community) => (
             <FadeIn key={community.id} direction="up" duration={0.5}>
               <div className="rounded-3xl border border-black/5 bg-white shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-black/5 flex items-center justify-between bg-black/[0.02]">
                   <div>
                     <h3 className="text-xl font-medium text-black">{community.name}</h3>
-                    <p className="text-sm text-black/50">{community.memberCount} members • {formatCurrency(community.monthlyContribution)}/mo</p>
+                    <p className="text-sm text-black/50">{community.memberCount} members • {formatCurrency(Number(community.monthlyContribution))}/mo</p>
                   </div>
                   <Badge className="rounded-full bg-black text-white">Trust Score: {community.trustScore}</Badge>
                 </div>
@@ -256,7 +334,7 @@ export default function CommunitiesPage() {
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 text-right tabular-nums">{member.sharePercentage}%</td>
-                                <td className="px-6 py-4 text-right tabular-nums font-medium">{formatCurrency(member.totalContributed)}</td>
+                                <td className="px-6 py-4 text-right tabular-nums font-medium">{formatCurrency(Number(member.totalContributed))}</td>
                                 <td className="px-6 py-4 text-center">
                                   <Badge variant="outline" className="rounded-full">{member.trustScore}</Badge>
                                 </td>
@@ -284,8 +362,7 @@ export default function CommunitiesPage() {
             </FadeIn>
           ))}
         </TabsContent>
-
-        </Tabs>
-      </div>
+      </Tabs>
+    </div>
   );
 }

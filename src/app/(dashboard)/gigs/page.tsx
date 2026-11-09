@@ -9,8 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatCurrency, cn } from '@/lib/utils';
 import { FadeIn } from '@/components/animations';
-import { motion } from 'framer-motion';
-import {
+import { motion } from 'framer-motion';import {
   Briefcase,
   Plus,
   DollarSign,
@@ -61,6 +60,7 @@ const mockGigJobs = [
 
 export default function GigsPage() {
   const [showCreateDialog, setShowCreateDialog] = React.useState(false);
+  const [verifying, setVerifying] = React.useState<Set<string>>(new Set());
 
   const getProgress = (job: typeof mockGigJobs[0]) => {
     const completed = job.milestones.filter(m => m.isCompleted).length;
@@ -70,6 +70,26 @@ export default function GigsPage() {
   const getCompletedAmount = (job: typeof mockGigJobs[0]) => {
     return job.milestones.filter(m => m.isCompleted).reduce((sum, m) => sum + m.amount, 0);
   };
+
+  async function verifyMilestone(jobId: string, milestoneIndex: number) {
+    setVerifying(prev => new Set(prev).add(`${jobId}-${milestoneIndex}`));
+    try {
+      const res = await fetch(`/api/gigs/${jobId}/complete-milestone`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ milestone_index: milestoneIndex }),
+      });
+      if (!res.ok) throw new Error('Failed to verify milestone');
+      await res.json();
+      // Refresh to reflect updated state
+      window.location.reload();
+    } catch (err) {
+      console.error('Verify milestone error:', err);
+    } finally {
+      setVerifying(prev => { const next = new Set(prev); next.delete(`${jobId}-${milestoneIndex}`); return next; });
+    }
+  }
 
    return (
      <div className="space-y-10 pb-20">
@@ -227,7 +247,15 @@ export default function GigsPage() {
                             {m.isCompleted ? (
                               <Badge className="rounded-full bg-emerald-500 text-white border-0 text-[10px] font-bold uppercase tracking-wider">Settled</Badge>
                             ) : (
-                              <Button variant="ghost" size="sm" className="h-8 rounded-lg text-xs font-bold hover:bg-black/5">Verify</Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 rounded-lg text-xs font-bold hover:bg-black/5"
+                                disabled={verifying.has(`${job.id}-${idx + 1}`)}
+                                onClick={() => verifyMilestone(job.id, idx + 1)}
+                              >
+                                {verifying.has(`${job.id}-${idx + 1}`) ? 'Verifying…' : 'Verify'}
+                              </Button>
                             )}
                           </div>
                         </motion.div>

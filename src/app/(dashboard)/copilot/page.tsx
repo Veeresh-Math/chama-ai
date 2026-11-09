@@ -130,6 +130,9 @@ export default function CopilotPage() {
   const [showRequestModal, setShowRequestModal] = React.useState(false);
   const [agentResponse, setAgentResponse] = React.useState('');
   const [isAgentThinking, setIsAgentThinking] = React.useState(false);
+  const [agentQuestion, setAgentQuestion] = React.useState('');
+  const [hasAiConsent, setHasAiConsent] = React.useState(false);
+  const [agentError, setAgentError] = React.useState(false);
   const [featureRequests, setFeatureRequests] = React.useState<FeatureRequest[]>(mockFeatureRequests);
   const [newRequest, setNewRequest] = React.useState({ title: '', description: '' });
   const [activeTab, setActiveTab] = React.useState('assistant');
@@ -144,12 +147,33 @@ export default function CopilotPage() {
 
   const handleAgentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setAgentResponse('Consulting Agent Council...');
+    if (!hasAiConsent || !agentQuestion.trim()) return;
+
+    setAgentResponse('');
+    setAgentError(false);
     setIsAgentThinking(true);
-    setTimeout(() => {
-      setAgentResponse(`Council Verdict: Your current savings rate is 60%. We recommend allocating 20% of surplus to the "High-Yield T-Bill" pool for an estimated +4.2% APY.`);
+    try {
+      const response = await fetch('/api/copilot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: agentQuestion, consent: true }),
+      });
+      const result = await response.json();
+
+      if (!response.ok) {
+        setAgentError(true);
+        setAgentResponse(result.error || 'The AI copilot could not answer right now.');
+        return;
+      }
+
+      setAgentResponse(result.answer);
+      setAgentQuestion('');
+    } catch {
+      setAgentError(true);
+      setAgentResponse('Unable to reach the AI copilot. Check your connection and try again.');
+    } finally {
       setIsAgentThinking(false);
-    }, 2000);
+    }
   };
 
   const handleFeatureRequest = async (e: React.FormEvent) => {
@@ -384,26 +408,26 @@ export default function CopilotPage() {
           <div className="flex items-center justify-between mb-6 relative z-10">
             <div className="flex items-center gap-3">
               <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
-              <h3 className="text-lg font-medium tracking-tight">Council Terminal</h3>
+              <h3 className="text-lg font-medium tracking-tight">AI Financial Copilot</h3>
             </div>
             <div className="flex items-center gap-2 text-[10px] text-white/40 font-mono uppercase tracking-widest">
               <span className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                STATUS: ACTIVE
+                READ-ONLY
               </span>
               <span className="text-white/20">|</span>
-              <span>SECURE_LINK: ON</span>
+              <span>PAYMENTS: OFF</span>
             </div>
           </div>
           <div className="bg-white/5 rounded-2xl p-5 h-80 overflow-y-auto font-mono text-sm space-y-4 mb-6 border border-white/10 relative z-10 scrollbar-thin scrollbar-thumb-white/10">
-            <div className="text-white/40">{`[SYSTEM]: Awaiting encrypted query...`}</div>
+            <div className="text-white/40">Ask about your collective savings or recent PayPal-linked activity. The copilot uses your account&apos;s aggregate summary and cannot move money.</div>
             {agentResponse && (
               <motion.div 
                 initial={{ opacity: 0, x: -10 }} 
                 animate={{ opacity: 1, x: 0 }} 
-                className="text-emerald-400"
+                className={agentError ? 'text-rose-300' : 'text-emerald-400'}
               >
-                {`[COUNCIL]: ${agentResponse}`}
+                {agentResponse}
               </motion.div>
             )}
             {isAgentThinking && (
@@ -411,20 +435,41 @@ export default function CopilotPage() {
                 <span className="animate-bounce">●</span>
                 <span className="animate-bounce delay-75">●</span>
                 <span className="animate-bounce delay-150">●</span>
-                <span className="italic">Council deliberating via consensus engine...</span>
+                <span className="italic">Generating an AI response...</span>
               </div>
             )}
           </div>
-          <form onSubmit={handleAgentSubmit} className="flex gap-3 relative z-10">
+          <form onSubmit={handleAgentSubmit} className="relative z-10 space-y-3">
+            <div className="flex gap-3">
             <div className="relative flex-1">
               <Input
                 className="w-full bg-white/10 border-white/10 text-white placeholder:text-white/30 rounded-xl h-12 pl-4 focus-visible:ring-white/20"
-                placeholder="Ask the council for a financial verdict..."
+                placeholder="Ask about your community's savings..."
+                value={agentQuestion}
+                onChange={(event) => setAgentQuestion(event.target.value)}
+                maxLength={1000}
+                disabled={isAgentThinking}
               />
             </div>
-            <Button className="rounded-xl bg-white text-black hover:bg-white/90 h-12 px-6 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <Button
+              type="submit"
+              disabled={!hasAiConsent || !agentQuestion.trim() || isAgentThinking}
+              className="rounded-xl bg-white text-black hover:bg-white/90 h-12 px-6 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
               <Send className="h-4 w-4" />
             </Button>
+            </div>
+            <label className="flex items-start gap-2 text-xs leading-relaxed text-white/60">
+              <input
+                type="checkbox"
+                checked={hasAiConsent}
+                onChange={(event) => setHasAiConsent(event.target.checked)}
+                className="mt-0.5 accent-white"
+              />
+              <span>
+                I agree to send my question and an aggregate summary of my community and PayPal-linked activity to OpenAI. Names, emails, transaction descriptions, and payment IDs are excluded.
+              </span>
+            </label>
           </form>
         </div>
       </FadeIn>

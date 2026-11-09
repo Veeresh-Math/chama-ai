@@ -141,3 +141,18 @@
 - [x] **KYA (Know Your Agent)** — `agentIdentities` registry + `verifyAgent`/`withKYA`/`optionalKYA`; guards `distribute_yield` (mandatory) and `distribute_funds`/`complete_milestone` (optional agent_id)
 - [x] **Tests updated** — 4 test files expect 9 tools (was 8), include `distribute_yield`
 
+## HowTheytest — E2E + Quality Culture (this session)
+
+- [x] **Playwright E2E suite** — `playwright.config.ts` (chromium, webServer dev), 21 tests across homepage/auth/dashboard
+- [x] **E2E: Landing page** — hero, nav links, CTA, hackathon badge, section ordering
+- [x] **E2E: Auth pages** — login/signup/forgot/reset render, client-side validation errors
+- [x] **E2E: Security redirects** — `/dashboard`, `/communities`, `/gigs`, `/analytics`, `/copilot` all redirect unauthenticated to `/login`
+- [x] **E2E: Signup validation** — short name shows error
+- [x] **All 21 E2E tests pass** (chromium)
+
+## Excellent Features — Wired to Real APIs (this session)
+
+- [x] **Communities page → real API** — replaced mock data with GET/POST `/api/communities`; create collective form submits to real API, lists real communities from DB
+- [x] **Gigs verify milestone → real API** — new `POST /api/gigs/[id]/complete-milestone` route; Verify button calls API, triggers PayPal payout, marks milestone complete
+- [x] **All tests pass: 148 vitest + 21 E2E**, typecheck clean, lint clean
+

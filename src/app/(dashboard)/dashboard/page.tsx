@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect } from 'react';
 import { gsap } from 'gsap';
 import {
@@ -415,10 +416,14 @@ export default function DashboardPage() {
                   <GsapCard key={agent.id} className="flex flex-col h-full">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="relative h-10 w-10 shrink-0">
-                        <img
+                        <Image
                           src={agent.avatar}
                           alt={agent.name}
+                          width={40}
+                          height={40}
                           className="h-10 w-10 rounded-full object-cover"
+                          fill={false}
+                          priority={false}
                         />
                         <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-black">
                           {agent.name.charAt(0)}

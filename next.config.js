@@ -3,6 +3,18 @@ const nextConfig = {
   output: 'standalone',
   images: {
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+        pathname: '/150/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'grainy-gradients.vercel.app',
+        pathname: '/**',
+      },
+    ],
   },
   experimental: {
     serverActions: {

@@ -25,12 +25,13 @@ describe('ACP Discovery Manifest', () => {
     expect(manifest.capabilities.protocol_version).toBe('2024-11-05');
   });
 
-  it('lists all 8 registered tools in capabilities', () => {
+  it('lists all 9 registered tools in capabilities', () => {
     const manifest = buildACPManifest(getRegisteredTools());
-    expect(manifest.capabilities.tools).toHaveLength(8);
+    expect(manifest.capabilities.tools).toHaveLength(9);
     expect(manifest.capabilities.tools).toContain('create_chama');
     expect(manifest.capabilities.tools).toContain('create_gig_job');
     expect(manifest.capabilities.tools).toContain('complete_milestone');
+    expect(manifest.capabilities.tools).toContain('distribute_yield');
   });
 
   it('declares API key auth with rate limit', () => {

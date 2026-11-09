@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, decimal, integer, boolean, jsonb, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, timestamp, decimal, integer, boolean, jsonb, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Users table (profile extension; identity lives in Neon Auth's neon_auth schema)
@@ -153,6 +153,47 @@ export const agentConversations = pgTable('agent_conversations', {
   userIdx: index('agent_conversations_user_idx').on(table.userId),
 }));
 
+// KYA — Know Your Agent registry (extends KYC/KYB to agents)
+export const agentIdentities = pgTable('agent_identities', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  agentId: varchar('agent_id', { length: 255 }).notNull().unique(),
+  agentName: varchar('agent_name', { length: 255 }),
+  publicKey: varchar('public_key', { length: 500 }),
+  isVerified: boolean('is_verified').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  agentIdIdx: index('agent_identities_agent_id_idx').on(table.agentId),
+}));
+
+// PYUSD Yield Vaults — per-community treasury for yield distribution
+export const communityYieldVaults = pgTable('community_yield_vaults', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  communityId: uuid('community_id').references(() => communities.id, { onDelete: 'cascade' }).notNull(),
+  currency: varchar('currency', { length: 3 }).default('PYUSD').notNull(),
+  annualYieldRateBasisPoints: integer('annual_yield_rate_bps').default(370).notNull(), // 3.7%
+  totalYieldDistributed: decimal('total_yield_distributed', { precision: 12, scale: 2 }).default('0').notNull(),
+  lastYieldDistributionAt: timestamp('last_yield_distribution_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  communityIdx: uniqueIndex('community_yield_vaults_community_idx').on(table.communityId),
+}));
+
+// Yield Distributions — record of each pro-rata yield payout
+export const yieldDistributions = pgTable('yield_distributions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  communityId: uuid('community_id').references(() => communities.id, { onDelete: 'cascade' }).notNull(),
+  totalAmount: decimal('total_amount', { precision: 12, scale: 2 }).notNull(),
+  currency: varchar('currency', { length: 3 }).default('PYUSD').notNull(),
+  status: varchar('status', { length: 20 }).default('pending').notNull(),
+  triggeredBy: varchar('triggered_by', { length: 50 }).default('agent').notNull(),
+  paypalPayoutBatchId: varchar('paypal_payout_batch_id', { length: 100 }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  completedAt: timestamp('completed_at'),
+}, (table) => ({
+  communityIdx: index('yield_distributions_community_idx').on(table.communityId),
+  statusIdx: index('yield_distributions_status_idx').on(table.status),
+}));
+
 // Agent Messages
 export const agentMessages = pgTable('agent_messages', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -219,6 +260,17 @@ export const agentMessagesRelations = relations(agentMessages, ({ one }) => ({
   conversation: one(agentConversations, { fields: [agentMessages.conversationId], references: [agentConversations.id] }),
 }));
 
+export const agentIdentitiesRelations = relations(agentIdentities, ({ one }) => ({
+}));
+
+export const communityYieldVaultsRelations = relations(communityYieldVaults, ({ one }) => ({
+  community: one(communities, { fields: [communityYieldVaults.communityId], references: [communities.id] }),
+}));
+
+export const yieldDistributionsRelations = relations(yieldDistributions, ({ one }) => ({
+  community: one(communities, { fields: [yieldDistributions.communityId], references: [communities.id] }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -240,3 +292,9 @@ export type AgentConversation = typeof agentConversations.$inferSelect;
 export type NewAgentConversation = typeof agentConversations.$inferInsert;
 export type AgentMessage = typeof agentMessages.$inferSelect;
 export type NewAgentMessage = typeof agentMessages.$inferInsert;
+export type AgentIdentity = typeof agentIdentities.$inferSelect;
+export type NewAgentIdentity = typeof agentIdentities.$inferInsert;
+export type CommunityYieldVault = typeof communityYieldVaults.$inferSelect;
+export type NewCommunityYieldVault = typeof communityYieldVaults.$inferInsert;
+export type YieldDistribution = typeof yieldDistributions.$inferSelect;
+export type NewYieldDistribution = typeof yieldDistributions.$inferInsert;

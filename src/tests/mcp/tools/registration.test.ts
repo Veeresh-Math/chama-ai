@@ -10,13 +10,14 @@ const EXPECTED_TOOLS = [
   'analyze_trust',
   'create_gig_job',
   'complete_milestone',
+  'distribute_yield',
 ];
 
 describe('MCP Tool Registration', () => {
-  it('registers all 8 tools', () => {
+  it('registers all 9 tools', () => {
     const server = createMCPServer();
     const tools = server.listTools();
-    expect(tools).toHaveLength(8);
+    expect(tools).toHaveLength(9);
     expect(tools.map(t => t.name)).toEqual(EXPECTED_TOOLS);
   });
 

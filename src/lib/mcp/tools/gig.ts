@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { gigJobs, gigMilestones, transactions, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { createSplitPayment } from '@/lib/paypal';
+import { verifyAgent } from '@/lib/mcp/kya';
 
 // ============================================
 // Zod Input Schemas
@@ -42,6 +43,7 @@ export const completeMilestoneInputSchema = z
     job_id: z.string().uuid(),
     milestone_index: z.number().int().min(1).optional(),
     milestone_name: z.string().min(1).max(255).optional(),
+    agent_id: z.string().min(1).optional(),
   })
   .superRefine((data, ctx) => {
     if (data.milestone_index === undefined && data.milestone_name === undefined) {
@@ -178,6 +180,13 @@ async function handleCompleteMilestone(
   params: z.infer<typeof completeMilestoneInputSchema>
 ): Promise<CallToolResult> {
   try {
+    if (params.agent_id) {
+      const kya = await verifyAgent(params.agent_id);
+      if (!kya.verified) {
+        return { content: [{ type: 'text', text: `KYA verification failed: ${kya.reason}` }], isError: true };
+      }
+    }
+
     const job = await db.query.gigJobs.findFirst({
       where: eq(gigJobs.id, params.job_id),
       with: { milestones: { orderBy: (m, { asc: ascFn }) => [ascFn(m.createdAt)] } },
@@ -371,13 +380,14 @@ export const createGigJobTool = {
 
 export const completeMilestoneTool = {
   name: 'complete_milestone',
-  description: 'Mark a gig milestone complete, releasing escrow payment to the freelancer',
+  description: 'Mark a gig milestone complete, releasing escrow payment to the freelancer (agent_id triggers KYA verification)',
   inputSchema: {
     type: 'object' as const,
     properties: {
       job_id: { type: 'string', format: 'uuid' },
       milestone_index: { type: 'integer', minimum: 1, description: '1-based milestone order' },
       milestone_name: { type: 'string', minLength: 1, maxLength: 255 },
+      agent_id: { type: 'string', minLength: 1, description: 'Optional verified agent identity (KYA)' },
     },
     required: ['job_id'],
   },

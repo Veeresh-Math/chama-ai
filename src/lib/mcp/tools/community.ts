@@ -6,6 +6,7 @@ import { communities, communityMembers, contributions, distributions, transactio
 import { eq, and, or, desc } from 'drizzle-orm';
 import { createPayment, createSplitPayment } from '@/lib/paypal';
 import { sendMCPProgress } from '@/lib/mcp/sse';
+import { verifyAgent } from '@/lib/mcp/kya';
 
 // ============================================
 // Zod Input Schemas
@@ -37,6 +38,7 @@ export const distributeFundsInputSchema = z.object({
   community_id: z.string().uuid(),
   triggered_by: z.enum(['manual', 'auto', 'agent']).optional(),
   session_id: z.string().min(8).max(64).regex(/^[a-zA-Z0-9_-]+$/).optional(),
+  agent_id: z.string().min(1).optional(),
 });
 
 export const getCommunityStateInputSchema = z.object({
@@ -228,6 +230,13 @@ async function handleContribute(params: z.infer<typeof contributeInputSchema>): 
 
 async function handleDistributeFunds(params: z.infer<typeof distributeFundsInputSchema>): Promise<CallToolResult> {
   try {
+    if (params.agent_id) {
+      const kya = await verifyAgent(params.agent_id);
+      if (!kya.verified) {
+        return { content: [{ type: 'text', text: `KYA verification failed: ${kya.reason}` }], isError: true };
+      }
+    }
+
     const community = await db.query.communities.findFirst({
       where: eq(communities.id, params.community_id),
       with: { members: true },
@@ -526,13 +535,14 @@ export const contributeTool = {
 
 export const distributeFundsTool = {
   name: 'distribute_funds',
-  description: 'Trigger distribution of community funds to members (optionally streams progress via SSE with session_id)',
+  description: 'Trigger distribution of community funds to members (optionally streams progress via SSE with session_id; agent_id triggers KYA verification)',
   inputSchema: {
     type: 'object' as const,
     properties: {
       community_id: { type: 'string', format: 'uuid' },
       triggered_by: { type: 'string', enum: ['manual', 'auto', 'agent'] },
       session_id: { type: 'string', minLength: 8, maxLength: 64, description: 'Optional SSE session id (connect to /api/mcp/sse first) to receive progress events' },
+      agent_id: { type: 'string', minLength: 1, description: 'Optional verified agent identity (KYA)' },
     },
     required: ['community_id'],
   },

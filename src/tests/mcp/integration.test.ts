@@ -127,12 +127,13 @@ describe('MCP HTTP Endpoint Integration', () => {
       expect(body.result.serverInfo).toEqual({ name: 'chama-ai', version: '1.0.0' });
     });
 
-    it('tools/list returns all 8 tools', async () => {
+    it('tools/list returns all 9 tools', async () => {
       const { body } = await callMCP({ jsonrpc: '2.0', id: 2, method: 'tools/list' });
       const names = body.result.tools.map((t: { name: string }) => t.name);
-      expect(names).toHaveLength(8);
+      expect(names).toHaveLength(9);
       expect(names).toContain('create_chama');
       expect(names).toContain('complete_milestone');
+      expect(names).toContain('distribute_yield');
     });
 
     it('malformed JSON body returns parse error 400', async () => {

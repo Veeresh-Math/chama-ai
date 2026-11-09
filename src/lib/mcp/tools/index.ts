@@ -6,14 +6,12 @@ import { MCPServer } from '../protocol';
 import type { CallToolResult } from '@/types/mcp';
 import { communityTools, communityToolSchemas } from './community';
 import { gigTools, gigToolSchemas } from './gig';
+import { yieldTools, yieldToolSchemas } from './yield';
 
 type ToolHandler = (params: Record<string, unknown>) => Promise<CallToolResult>;
 
 export function registerAllTools(server: MCPServer): void {
-  const registered: Array<{
-    tool: (typeof communityTools)[number] | (typeof gigTools)[number];
-    zodSchema: z.ZodSchema;
-  }> = [
+  const registered = [
     ...communityTools.map(tool => ({
       tool,
       zodSchema: communityToolSchemas[tool.name as keyof typeof communityToolSchemas],
@@ -21,6 +19,10 @@ export function registerAllTools(server: MCPServer): void {
     ...gigTools.map(tool => ({
       tool,
       zodSchema: gigToolSchemas[tool.name as keyof typeof gigToolSchemas],
+    })),
+    ...yieldTools.map(tool => ({
+      tool,
+      zodSchema: yieldToolSchemas[tool.name as keyof typeof yieldToolSchemas],
     })),
   ];
 

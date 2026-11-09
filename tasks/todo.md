@@ -130,7 +130,14 @@
 
 ## Checkpoint: Complete
 - [x] All acceptance criteria met
-- [x] All tests pass (139: unit + integration)
-- [x] Build succeeds (BUILD_ID eSQ5dt07uzPj4_-iorMpY)
+- [x] All tests pass (148: unit + integration)
+- [x] Build succeeds
 - [x] Documentation complete
 - [x] Ready for code review (`code-review-and-quality`)
+
+## Bonus: Ponytail MVP (PayPal parity) — shipped same session
+
+- [x] **PYUSD Yield Vault** — `communityYieldVaults` + `yieldDistributions` tables; `distribute_yield` MCP tool pays pro-rata PYUSD yield (3.7% APY default) to members, SSE-streamed, idempotent
+- [x] **KYA (Know Your Agent)** — `agentIdentities` registry + `verifyAgent`/`withKYA`/`optionalKYA`; guards `distribute_yield` (mandatory) and `distribute_funds`/`complete_milestone` (optional agent_id)
+- [x] **Tests updated** — 4 test files expect 9 tools (was 8), include `distribute_yield`
+

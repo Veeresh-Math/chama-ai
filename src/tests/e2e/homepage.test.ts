@@ -63,12 +63,15 @@ test.describe('Cham.ai Landing Page', () => {
     await expect(page.locator('#faq')).toBeVisible();
   });
 
-  test('feature picker switches active feature', async ({ page }) => {
+  test('all features visible in grid', async ({ page }) => {
     await page.goto('/');
     await page.locator('#features').scrollIntoViewIfNeeded();
-
-    // Click second feature (Savings circles on autopilot)
-    await page.getByRole('tab', { name: 'Savings circles on autopilot' }).click();
-    await expect(page.getByText('Contribution schedules, reminders, rollovers and distributions handled end to end.')).toBeVisible();
+    const features = page.locator('#features');
+    // All 5 features visible at once (no hidden picker)
+    await expect(features.getByText('An agent that transacts')).toBeVisible();
+    await expect(features.getByText('Savings circles on autopilot')).toBeVisible();
+    await expect(features.getByText('Gig milestone escrow')).toBeVisible();
+    await expect(features.getByText('Trust scoring that travels')).toBeVisible();
+    await expect(features.getByText('Agent-ready by design')).toBeVisible();
   });
 });

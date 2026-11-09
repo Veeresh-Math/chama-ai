@@ -6,6 +6,8 @@ import { eq, and } from 'drizzle-orm';
 import { createSplitPayment } from '@/lib/paypal';
 import { enqueueJob, QUEUE_KEYS } from '@/lib/queue';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function getUserId(): Promise<string | null> {
   const { data: session } = await auth.getSession();
   return session?.user?.id || null;
@@ -20,6 +22,11 @@ export async function POST(
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;
+
+    if (!UUID_REGEX.test(id)) {
+      return NextResponse.json({ error: 'Invalid community ID' }, { status: 400 });
+    }
+
     const { trigger = 'manual' } = await request.json();
 
     const community = await db.query.communities.findFirst({

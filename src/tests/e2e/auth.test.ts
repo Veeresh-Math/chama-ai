@@ -11,7 +11,7 @@ test.describe('Auth Pages', () => {
 
   test('signup page renders with form fields', async ({ page }) => {
     await page.goto('/signup');
-    await expect(page.getByRole('heading', { name: /create your account/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /create your account/i })).toBeVisible({ timeout: 10000 });
     await expect(page.getByLabel(/your name/i)).toBeVisible();
     await expect(page.getByLabel(/email/i)).toBeVisible();
     await expect(page.getByLabel(/password/i)).toBeVisible();

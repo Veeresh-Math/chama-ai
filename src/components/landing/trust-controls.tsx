@@ -144,7 +144,7 @@ export default function TrustControls() {
   };
 
   return (
-    <section id="security" className="relative z-10 -mt-10 rounded-t-[40px] bg-night py-28 text-white sm:py-40">
+    <section id="security" className="relative z-10 -mt-10 rounded-t-[40px] bg-night py-28 text-white sm:py-40 scroll-mt-[120px]">
       <Container>
         <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="lg:sticky lg:top-[120px] lg:self-start">

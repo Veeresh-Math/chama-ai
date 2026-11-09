@@ -32,4 +32,43 @@ test.describe('Cham.ai Landing Page', () => {
     await page.goto('/');
     await expect(page.getByText('PayPal AI Hackathon 2026 Submission')).toBeVisible();
   });
+
+  test('nav anchor links scroll to their sections', async ({ page }) => {
+    await page.goto('/');
+    const nav = page.getByRole('navigation', { name: 'Primary' });
+
+    // Click Features -> should scroll to #features
+    await nav.getByRole('link', { name: 'Product', exact: true }).click();
+    await expect(page).toHaveURL(/#features/);
+    await expect(page.locator('#features')).toBeVisible();
+
+    // Click How it works -> should scroll to #how
+    await nav.getByRole('link', { name: 'How it works', exact: true }).click();
+    await expect(page).toHaveURL(/#how/);
+    await expect(page.locator('#how')).toBeVisible();
+
+    // Click Security -> should scroll to #security
+    await nav.getByRole('link', { name: 'Security', exact: true }).click();
+    await expect(page).toHaveURL(/#security/);
+    await expect(page.locator('#security')).toBeVisible();
+
+    // Click Pricing -> should scroll to #pricing
+    await nav.getByRole('link', { name: 'Pricing', exact: true }).click();
+    await expect(page).toHaveURL(/#pricing/);
+    await expect(page.locator('#pricing')).toBeVisible();
+
+    // Click FAQ -> should scroll to #faq
+    await nav.getByRole('link', { name: 'FAQ', exact: true }).click();
+    await expect(page).toHaveURL(/#faq/);
+    await expect(page.locator('#faq')).toBeVisible();
+  });
+
+  test('feature picker switches active feature', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('#features').scrollIntoViewIfNeeded();
+
+    // Click second feature (Savings circles on autopilot)
+    await page.getByRole('tab', { name: 'Savings circles on autopilot' }).click();
+    await expect(page.getByText('Contribution schedules, reminders, rollovers and distributions handled end to end.')).toBeVisible();
+  });
 });

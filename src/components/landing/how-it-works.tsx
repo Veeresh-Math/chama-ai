@@ -34,7 +34,7 @@ export default function HowItWorks() {
   const Icon = step.icon;
 
   return (
-    <section id="how" className="py-28 sm:py-40">
+    <section id="how" className="py-28 sm:py-40 scroll-mt-[120px]">
       <Container>
         <SectionHeading
           badge="How it works"

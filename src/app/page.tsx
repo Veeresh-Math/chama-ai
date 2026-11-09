@@ -17,7 +17,7 @@ export default function LandingPage() {
       <SiteNav />
       <main>
         <Hero />
-        <div className="relative z-10 -mt-10 overflow-hidden rounded-t-[40px] bg-cream">
+        <div className="relative z-10 -mt-10 rounded-t-[40px] bg-cream overflow-visible">
           <TrustBar />
           <Features />
           <HowItWorks />
@@ -25,7 +25,7 @@ export default function LandingPage() {
         </div>
         <TrustControls />
         <Testimonials />
-        <div className="relative z-10 -mt-10 overflow-hidden rounded-t-[40px] bg-cream">
+        <div className="relative z-10 -mt-10 rounded-t-[40px] bg-cream overflow-visible">
           <Pricing />
           <Faq />
           <FinalCta />

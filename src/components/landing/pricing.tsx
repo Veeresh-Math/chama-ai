@@ -64,7 +64,7 @@ export default function Pricing() {
   const isLoggedIn = auth.status === 'authenticated';
 
   return (
-    <section id="pricing" className="py-28 sm:py-40">
+    <section id="pricing" className="py-28 sm:py-40 scroll-mt-[120px]">
       <Container>
         <SectionHeading
           badge="Pricing"

@@ -159,7 +159,7 @@ export default function Features() {
   const ActiveIcon = active.icon;
 
   return (
-    <section id="features" className="py-28 sm:py-40">
+    <section id="features" className="py-28 sm:py-40 scroll-mt-[120px]">
       <Container>
         <ScrollReveal direction="up" distance={30}>
           <h2 className="max-w-[1100px] text-[clamp(2.25rem,7vw,6rem)] font-medium leading-[0.98] tracking-[-0.045em] text-black">

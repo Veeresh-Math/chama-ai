@@ -32,7 +32,7 @@ const faqs = [
 
 export default function Faq() {
   return (
-    <section id="faq" className="py-28 sm:py-40">
+    <section id="faq" className="py-28 sm:py-40 scroll-mt-[120px]">
       <Container>
         <ScrollReveal direction="up" distance={24}>
           <div className="mx-auto max-w-[670px] text-center">

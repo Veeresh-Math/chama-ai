@@ -9,7 +9,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
     links: [
       { label: 'Features', href: '#features' },
       { label: 'How it works', href: '#how' },
-      { label: 'The 90-second demo', href: '#demo' },
+      { label: 'See it in action', href: '#demo' },
       { label: 'Security', href: '#security' },
       { label: 'Pricing', href: '#pricing' },
     ],
@@ -25,7 +25,7 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Get started',
     links: [
-      { label: 'Create an account', href: '/signup' },
+      { label: 'Sign up', href: '/signup' },
       { label: 'Sign in', href: '/login' },
       { label: 'Reset password', href: '/forgot-password' },
     ],
@@ -45,7 +45,7 @@ export default function Footer() {
                 and gig escrow — settled with PayPal and PYUSD.
               </p>
               <div className="mt-5 flex items-center gap-3">
-                <CtaLink href="/signup">Start free</CtaLink>
+                <CtaLink href="/signup">Sign up</CtaLink>
                 <a
                   href="https://github.com/Veeresh-Math/chama-ai"
                   target="_blank"

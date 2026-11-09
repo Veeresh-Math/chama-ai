@@ -3,8 +3,9 @@ import { Tool } from '@/types/mcp';
 import { CallToolResult } from '@/types/mcp';
 import { db } from '@/db';
 import { communities, communityMembers, contributions, distributions, transactions, users } from '@/db/schema';
-import { eq, and, sum, desc } from 'drizzle-orm';
+import { eq, and, or, desc } from 'drizzle-orm';
 import { createPayment, createSplitPayment } from '@/lib/paypal';
+import { sendMCPProgress } from '@/lib/mcp/sse';
 
 // ============================================
 // Zod Input Schemas
@@ -35,6 +36,7 @@ export const contributeInputSchema = z.object({
 export const distributeFundsInputSchema = z.object({
   community_id: z.string().uuid(),
   triggered_by: z.enum(['manual', 'auto', 'agent']).optional(),
+  session_id: z.string().min(8).max(64).regex(/^[a-zA-Z0-9_-]+$/).optional(),
 });
 
 export const getCommunityStateInputSchema = z.object({
@@ -244,6 +246,28 @@ async function handleDistributeFunds(params: z.infer<typeof distributeFundsInput
       return { content: [{ type: 'text', text: 'No funds available for distribution' }], isError: true };
     }
 
+    // Idempotency guard: block a second payout while one is pending/processing
+    const pendingRows = await db
+      .select()
+      .from(distributions)
+      .where(
+        and(
+          eq(distributions.communityId, params.community_id),
+          or(eq(distributions.status, 'pending'), eq(distributions.status, 'processing'))
+        )
+      )
+      .limit(1);
+
+    if (pendingRows.length > 0) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Distribution already in progress for community ${community.name} (ID: ${pendingRows[0]?.id}, status: ${pendingRows[0]?.status}). Wait for it to complete or verify PayPal payout batch ${pendingRows[0]?.paypalPayoutBatchId} before retrying.`,
+        }],
+        isError: true,
+      };
+    }
+
     const totalShares = community.members.reduce((sum, m) => sum + Number(m.sharePercentage), 0);
     const recipients = community.members
       .filter(m => m.isActive && m.userId)
@@ -253,27 +277,55 @@ async function handleDistributeFunds(params: z.infer<typeof distributeFundsInput
         name: m.name,
       }));
 
-    const senderBatchId = `dist_${community.id}_${Date.now()}`;
-    const payout = await createSplitPayment({
-      senderBatchId,
-      emailSubject: `Distribution from ${community.name}`,
-      items: recipients.map(r => ({
-        recipient_type: 'EMAIL' as const,
-        amount: { value: r.share, currency: community.currency },
-        receiver: r.email,
-        note: r.name ?? undefined,
-      })),
+    sendMCPProgress(params.session_id, 'validated', `Distribution validated: ${recipients.length} recipients, ${totalFunds} ${community.currency}`, {
+      progress: 25,
+      data: { recipients: recipients.length, totalFunds },
     });
 
-    await db.insert(distributions).values({
+    // Persist the pending distribution BEFORE the PayPal call so retries
+    // are blocked while it is in flight; deterministic batch id = row id
+    const [pendingRow] = await db.insert(distributions).values({
       communityId: params.community_id,
       totalAmount: totalFunds.toFixed(2),
       currency: community.currency,
-      paypalPayoutBatchId: payout.batch_header.payout_batch_id,
-      status: 'completed',
+      status: 'pending',
       triggeredBy: params.triggered_by || 'agent',
-      completedAt: new Date(),
+    }).returning();
+
+    const senderBatchId = `dist_${pendingRow.id}`;
+
+    let payout;
+    try {
+      payout = await createSplitPayment({
+        senderBatchId,
+        emailSubject: `Distribution from ${community.name}`,
+        items: recipients.map(r => ({
+          recipient_type: 'EMAIL' as const,
+          amount: { value: r.share, currency: community.currency },
+          receiver: r.email,
+          note: r.name ?? undefined,
+        })),
+      });
+    } catch (payError) {
+      // Release the lock on failure — safe to retry
+      await db.update(distributions)
+        .set({ status: 'failed', completedAt: new Date() })
+        .where(eq(distributions.id, pendingRow.id));
+      throw payError;
+    }
+
+    sendMCPProgress(params.session_id, 'payout_submitted', `PayPal payout submitted: batch ${payout.batch_header.payout_batch_id}`, {
+      progress: 70,
+      data: { batch_id: payout.batch_header.payout_batch_id },
     });
+
+    await db.update(distributions)
+      .set({
+        status: 'completed',
+        paypalPayoutBatchId: payout.batch_header.payout_batch_id,
+        completedAt: new Date(),
+      })
+      .where(eq(distributions.id, pendingRow.id));
 
     for (const member of community.members.filter(m => m.isActive && m.userId)) {
       const share = (totalFunds * Number(member.sharePercentage) / totalShares);
@@ -293,6 +345,11 @@ async function handleDistributeFunds(params: z.infer<typeof distributeFundsInput
     await db.update(communities)
       .set({ totalFunds: '0', updatedAt: new Date() })
       .where(eq(communities.id, params.community_id));
+
+    sendMCPProgress(params.session_id, 'completed', `Distribution completed to ${recipients.length} members`, {
+      progress: 100,
+      data: { batch_id: payout.batch_header.payout_batch_id },
+    });
 
     return {
       content: [{
@@ -469,12 +526,13 @@ export const contributeTool = {
 
 export const distributeFundsTool = {
   name: 'distribute_funds',
-  description: 'Trigger distribution of community funds to members',
+  description: 'Trigger distribution of community funds to members (optionally streams progress via SSE with session_id)',
   inputSchema: {
     type: 'object' as const,
     properties: {
       community_id: { type: 'string', format: 'uuid' },
       triggered_by: { type: 'string', enum: ['manual', 'auto', 'agent'] },
+      session_id: { type: 'string', minLength: 8, maxLength: 64, description: 'Optional SSE session id (connect to /api/mcp/sse first) to receive progress events' },
     },
     required: ['community_id'],
   },

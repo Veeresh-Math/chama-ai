@@ -16,10 +16,18 @@ import {
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { authClient, useAuth } from '@/lib/auth/client';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const auth = useAuth();
+  const user = auth.status === 'authenticated' ? auth.user : null;
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    window.location.href = '/';
+  };
 
   const navItems = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -82,15 +90,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Settings className="h-5 w-5 shrink-0" />
               {isSidebarOpen && <span>Settings</span>}
             </Link>
-            <button 
+            <button
               onClick={() => {
-                localStorage.removeItem('chamaai_logged_in');
-                window.location.href = '/';
+                void handleLogout();
               }}
               className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-red-500 transition-all hover:bg-red-50"
             >
               <LogOut className="h-5 w-5 shrink-0" />
-              {isSidebarOpen && <span>Logout</span>}
+              {isSidebarOpen && <span>Log out</span>}
             </button>
           </div>
         </div>
@@ -117,7 +124,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Bell className="h-5 w-5 text-black/60" />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
             </button>
-            <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-violet-500 to-fuchsia-500 ring-2 ring-white shadow-sm" />
+            {/* Signed-in identity so users always know who they are here */}
+            <div className="flex items-center gap-2.5" title={user?.email ?? ''}>
+              <span className="hidden text-sm font-medium text-black/70 sm:block">
+                {user ? user.name : 'You'}
+              </span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-violet-500 to-fuchsia-500 text-xs font-semibold text-white ring-2 ring-white shadow-sm">
+                {user ? user.name.trim().charAt(0).toUpperCase() || 'C' : 'C'}
+              </div>
+            </div>
           </div>
         </header>
 

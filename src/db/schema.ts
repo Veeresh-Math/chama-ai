@@ -1,9 +1,9 @@
 import { pgTable, uuid, varchar, text, timestamp, decimal, integer, boolean, jsonb, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// Users table (synced with Supabase Auth)
+// Users table (profile extension; identity lives in Neon Auth's neon_auth schema)
 export const users = pgTable('users', {
-  id: uuid('id').primaryKey(), // Supabase Auth UUID
+  id: varchar('id', { length: 64 }).primaryKey(), // Neon Auth (Better Auth) user id
   email: varchar('email', { length: 255 }).notNull().unique(),
   fullName: varchar('full_name', { length: 255 }),
   avatarUrl: varchar('avatar_url', { length: 500 }),
@@ -19,7 +19,7 @@ export const communities = pgTable('communities', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
-  ownerId: uuid('owner_id').references(() => users.id).notNull(),
+  ownerId: uuid('owner_id').notNull(), // Better Auth user id (not a uuid; no FK)
   monthlyContribution: decimal('monthly_contribution', { precision: 10, scale: 2 }).notNull(),
   currency: varchar('currency', { length: 3 }).default('USD').notNull(),
   autoDistribute: boolean('auto_distribute').default(false),
@@ -38,7 +38,7 @@ export const communities = pgTable('communities', {
 export const communityMembers = pgTable('community_members', {
   id: uuid('id').primaryKey().defaultRandom(),
   communityId: uuid('community_id').references(() => communities.id, { onDelete: 'cascade' }).notNull(),
-  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id'), // optional link to users.id; no FK (Better Auth ids are not uuids)
   email: varchar('email', { length: 255 }).notNull(),
   name: varchar('name', { length: 255 }),
   sharePercentage: decimal('share_percentage', { precision: 5, scale: 2 }).default('0'),
@@ -89,7 +89,7 @@ export const gigJobs = pgTable('gig_jobs', {
   id: uuid('id').primaryKey().defaultRandom(),
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description'),
-  freelancerId: uuid('freelancer_id').references(() => users.id).notNull(),
+  freelancerId: uuid('freelancer_id').notNull(), // Better Auth user id; no FK
   clientEmail: varchar('client_email', { length: 255 }).notNull(),
   clientName: varchar('client_name', { length: 255 }),
   totalBudget: decimal('total_budget', { precision: 10, scale: 2 }).notNull(),
@@ -123,7 +123,7 @@ export const gigMilestones = pgTable('gig_milestones', {
 // Transactions (unified ledger)
 export const transactions = pgTable('transactions', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id).notNull(),
+  userId: uuid('user_id').notNull(), // Better Auth user id; no FK
   type: varchar('type', { length: 30 }).notNull(), // contribution, distribution, gig_payment, gig_milestone, payout
   amount: decimal('amount', { precision: 12, scale: 2 }).notNull(),
   currency: varchar('currency', { length: 3 }).default('USD').notNull(),
@@ -144,7 +144,7 @@ export const transactions = pgTable('transactions', {
 // Agent Conversations
 export const agentConversations = pgTable('agent_conversations', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id).notNull(),
+  userId: uuid('user_id').notNull(), // Better Auth user id; no FK
   title: varchar('title', { length: 255 }),
   context: jsonb('context'), // community data, gig data, transactions
   createdAt: timestamp('created_at').defaultNow().notNull(),

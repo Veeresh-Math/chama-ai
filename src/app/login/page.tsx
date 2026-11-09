@@ -1,29 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FadeIn } from '@/components/animations';
 import { Logo } from '@/components/landing/primitives';
+import { authClient, authErrorMessage, safeNextPath, ensureAppUser, MIN_AUTH_SPINNER_MS, wait, useRedirectIfAuthenticated } from '@/lib/auth/client';
+import { Spinner } from '@/components/ui/spinner';
 
-// TasteSkill improvements applied:
-// - Flat surfaces, no excessive rounding
-// - Proper type scale with clear hierarchy
-// - Equal, tight margins
-// - Clear labels, no "eyebrow" ambiguity
-// - Proper spacing that avoids empty stretches
-// - Honest error states
-// - Focused, single-purpose form with clear action
+function LoginForm() {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const next = searchParams.get('next');
+
+  const redirecting = useRedirectIfAuthenticated();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (!email.includes('@')) {
       setError('Please enter a valid email address');
       return;
@@ -34,18 +34,45 @@ export default function LoginPage() {
     }
 
     setIsLoading(true);
-    try {
-      console.log('Logging in with:', email, password);
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      localStorage.setItem('chamaai_logged_in', 'true');
-      alert('Login successful! Welcome back.');
-      window.location.href = '/';
-    } catch (err) {
-      setError('Failed to login. Please check your credentials.');
-    } finally {
+    const [signInResult] = await Promise.all([
+      authClient.signIn.email({
+        email: email.trim(),
+        password,
+      }),
+      // Keep the spinner visible long enough to register as motion
+      wait(MIN_AUTH_SPINNER_MS),
+    ]);
+    const { error: authError } = signInResult;
+
+    if (authError) {
+      setError(
+        authError.status === 401 || authError.status === 422
+          ? 'That email or password doesn\u2019t look right. Try again.'
+          : authErrorMessage(authError)
+      );
       setIsLoading(false);
+      return;
     }
+
+    // Mirror the auth user into the app's users table (cookie-verifiable server-side)
+    await ensureAppUser();
+
+    // Sign in always returns you to where you were headed (or the app home),
+    // never back to the marketing site.
+    router.replace(safeNextPath(next));
   };
+
+  if (redirecting) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[#f8f8f8] px-4 py-8">
+        <Logo />
+        <div className="mt-8 flex items-center gap-3 border border-[#e6e6e6] bg-white px-5 py-3">
+          <Spinner className="text-[#0a0a0a]" />
+          <p className="text-sm text-[#6b6b6b]">You&apos;re already signed in — opening your workspace…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-[#f8f8f8] px-4 py-8">
@@ -54,7 +81,6 @@ export default function LoginPage() {
           <Logo />
         </Link>
 
-        {/* TasteSkill: Flat surfaces with minimal border, subtle radius only for cards */}
         <div className="border border-[#e6e6e6] bg-white p-8">
           <h1 className="text-2xl font-medium leading-tight tracking-[-0.01em] text-[#0a0a0a]">
             Welcome <span className="font-serif italic">back.</span>
@@ -69,12 +95,9 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            
+
             <div>
-              <label
-                htmlFor="email"
-                className="block text-xs font-medium text-[#6b6b6b] mb-2"
-              >
+              <label htmlFor="email" className="block text-xs font-medium text-[#6b6b6b] mb-2">
                 Email
               </label>
               <input
@@ -91,10 +114,7 @@ export default function LoginPage() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label
-                  htmlFor="password"
-                  className="block text-xs font-medium text-[#6b6b6b]"
-                >
+                <label htmlFor="password" className="block text-xs font-medium text-[#6b6b6b]">
                   Password
                 </label>
                 <Link
@@ -116,23 +136,29 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* TasteSkill: Primary button is neutral, no brand color - focus on action */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isLoading}
-              className="w-full h-9 bg-[#141414] text-white text-sm font-medium hover:bg-[#3d3d3d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-9 bg-[#141414] text-white text-sm font-medium hover:bg-[#3d3d3d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2.5"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? (
+                <>
+                  <Spinner className="text-white" />
+                  <span>Signing you in…</span>
+                </>
+              ) : (
+                'Sign in'
+              )}
             </button>
           </form>
 
           <p className="mt-6 text-center text-xs text-[#6b6b6b]">
-            New here?{' '}
+            New to Cham.ai?{' '}
             <Link
-              href="/signup"
+              href={{ pathname: '/signup', query: next ? { next } : {} }}
               className="text-[#1d5fbf] hover:underline underline-offset-2"
             >
-              Create an account
+              Sign up
             </Link>
           </p>
         </div>
@@ -142,5 +168,13 @@ export default function LoginPage() {
         </p>
       </FadeIn>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

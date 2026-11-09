@@ -58,10 +58,12 @@ export function getAuthHeaders(key: string): Record<string, string> {
   return {};
 }
 
-export function getRateLimitHeaders(allowed: boolean, retryAfter?: number): Record<string, string> {
+export function getRateLimitHeaders(key: string, allowed: boolean, retryAfter?: number): Record<string, string> {
+  const entry = rateLimitStore.get(key);
+  const used = entry && Date.now() <= entry.resetAt ? entry.count : 0;
   const headers: Record<string, string> = {
     'X-RateLimit-Limit': String(MAX_REQUESTS),
-    'X-RateLimit-Remaining': String(Math.max(0, MAX_REQUESTS - (rateLimitStore.get('default')?.count || 0))),
+    'X-RateLimit-Remaining': String(Math.max(0, MAX_REQUESTS - used)),
   };
   if (!allowed && retryAfter) {
     headers['Retry-After'] = String(retryAfter);

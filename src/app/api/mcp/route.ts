@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createMCPServer } from '@/lib/mcp/server';
 import { parseMCPRequest, MCP_ERROR_CODES, createMCPError, createMCPResponse } from '@/lib/mcp/protocol';
-import { validateAPIKey, rateLimit, getAuthHeaders, getRateLimitHeaders } from '@/lib/mcp/auth';
+import { validateAPIKey, rateLimit, getRateLimitHeaders } from '@/lib/mcp/auth';
 
 const mcpServer = createMCPServer();
 
@@ -9,18 +9,26 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
   const apiKey = request.headers.get('x-api-key');
 
-  // Authentication
-  const auth = validateAPIKey(apiKey || '');
-  if (!auth.valid) {
+  // Authentication — missing vs invalid key distinguished per SPEC
+  // (missing -> 401 + WWW-Authenticate challenge, invalid -> 403)
+  if (!apiKey) {
     return NextResponse.json(
-      createMCPResponse(null, undefined, createMCPError(MCP_ERROR_CODES.INVALID_REQUEST, 'Invalid or missing API key')),
-      { status: 401, headers: getAuthHeaders(apiKey || '') }
+      createMCPResponse(null, undefined, createMCPError(MCP_ERROR_CODES.INVALID_REQUEST, 'Missing API key')),
+      { status: 401, headers: { 'WWW-Authenticate': 'Bearer error="missing_token"' } }
     );
   }
 
-  // Rate limiting
-  const rateLimitResult = rateLimit(apiKey!);
-  const rateLimitHeaders = getRateLimitHeaders(rateLimitResult.allowed, rateLimitResult.retryAfter);
+  const auth = validateAPIKey(apiKey);
+  if (!auth.valid) {
+    return NextResponse.json(
+      createMCPResponse(null, undefined, createMCPError(MCP_ERROR_CODES.INVALID_REQUEST, 'Invalid API key')),
+      { status: 403, headers: { 'WWW-Authenticate': 'Bearer error="invalid_token"' } }
+    );
+  }
+
+  // Rate limiting (per authenticated key only)
+  const rateLimitResult = rateLimit(apiKey);
+  const rateLimitHeaders = getRateLimitHeaders(apiKey, rateLimitResult.allowed, rateLimitResult.retryAfter);
   if (!rateLimitResult.allowed) {
     return NextResponse.json(
       createMCPResponse(null, undefined, createMCPError(MCP_ERROR_CODES.INTERNAL_ERROR, 'Rate limit exceeded')),

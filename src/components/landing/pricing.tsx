@@ -3,6 +3,7 @@
 import { Check } from 'lucide-react';
 import { ScrollReveal, StaggerContainer } from '@/components/animations';
 import { Container, CtaLink, SectionHeading } from './primitives';
+import { useAuth } from '@/lib/auth/client';
 import { cn } from '@/lib/utils';
 
 const tiers = [
@@ -20,6 +21,7 @@ const tiers = [
     ],
     cta: 'Start free',
     featured: false,
+    action: '/communities',
   },
   {
     name: 'Collective',
@@ -37,6 +39,7 @@ const tiers = [
     ],
     cta: 'Start 14-day trial',
     featured: true,
+    action: '/communities',
   },
   {
     name: 'Network',
@@ -52,10 +55,14 @@ const tiers = [
     ],
     cta: 'Talk to us',
     featured: false,
+    action: '/communities',
   },
 ];
 
 export default function Pricing() {
+  const auth = useAuth();
+  const isLoggedIn = auth.status === 'authenticated';
+
   return (
     <section id="pricing" className="py-28 sm:py-40">
       <Container>
@@ -139,7 +146,16 @@ export default function Pricing() {
                   ))}
                 </ul>
 
-                <CtaLink href="/signup" className="mt-8 w-full">
+                <CtaLink
+                  href={
+                    // Signed in: straight to where the tier takes you.
+                    // Signed out: sign up first, then land exactly there.
+                    isLoggedIn
+                      ? tier.action
+                      : { pathname: '/signup', query: { next: tier.action } }
+                  }
+                  className="mt-8 w-full"
+                >
                   {tier.cta}
                 </CtaLink>
               </div>

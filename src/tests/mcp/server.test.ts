@@ -10,8 +10,17 @@ describe('MCP Server Factory', () => {
     expect(typeof server.listTools).toBe('function');
   });
 
-  it('server has community tools registered by default', () => {
+  it('server has all 8 tools registered by default (6 community + 2 gig)', () => {
     const server = createMCPServer();
-    expect(server.listTools()).toHaveLength(6);
+    const toolNames = server.listTools().map(t => t.name);
+    expect(toolNames).toHaveLength(8);
+    expect(toolNames).toContain('create_chama');
+    expect(toolNames).toContain('join_chama');
+    expect(toolNames).toContain('contribute');
+    expect(toolNames).toContain('distribute_funds');
+    expect(toolNames).toContain('get_community_state');
+    expect(toolNames).toContain('analyze_trust');
+    expect(toolNames).toContain('create_gig_job');
+    expect(toolNames).toContain('complete_milestone');
   });
 });

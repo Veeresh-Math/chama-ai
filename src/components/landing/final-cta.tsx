@@ -4,9 +4,11 @@ import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { ScrollReveal } from '@/components/animations';
 import { Container, CtaLink } from './primitives';
+import { useAuth } from '@/lib/auth/client';
 
 export default function FinalCta() {
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+  const auth = useAuth();
+  const isLoggedIn = auth.status === 'authenticated';
 
 
   return (
@@ -24,13 +26,10 @@ export default function FinalCta() {
               every transaction.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <CtaLink href={isLoggedIn ? '/dashboard' : '/signup'}>
                 {isLoggedIn ? 'Go to your Dashboard' : 'Start your chama — free'}
                 <ArrowRight className="h-4 w-4" />
-              </CtaLink>
-              <CtaLink href="#demo" variant="ghost">
-                Rewatch the 90-second flow
               </CtaLink>
             </div>
 

@@ -19,13 +19,15 @@ import {
   Brain,
   UserCheck,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 import { FadeIn } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth/client';
 
 // MiroFish AI Agent Persona - real users that MiroFish generates to test your site
 interface MiroFishAgent {
@@ -49,7 +51,74 @@ interface MiroFishRecommendation {
   supportingAgents: string[]; // which personas wanted this
 }
 
+// The three get-started actions, reusable in both onboarding modes.
+// Engaging any step counts as finishing onboarding for the next visit.
+function OnboardingSteps({ onFinish }: { onFinish: () => void }) {
+  const steps = [
+    { icon: Users, accent: 'text-violet-600', title: '1. Create your first circle', desc: 'Name it, set the monthly amount — invite members later.', href: '/communities' },
+    { icon: Cpu, accent: 'text-blue-600', title: '2. Meet your AI copilot', desc: 'Ask anything — it reads your ledger and suggests next moves.', href: '/copilot' },
+    { icon: Briefcase, accent: 'text-emerald-600', title: '3. Post a paid gig', desc: 'Milestone escrow keeps every payment safe until delivery.', href: '/gigs' },
+  ];
+  return (
+    <FadeIn direction="up" duration={0.5} delay={0.15}>
+      <div className="mt-6 rounded-3xl bg-white p-6 border border-violet-100 sm:p-8">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium tracking-tight text-black">
+            Do these <span className="font-serif italic">3 things:</span>
+          </h3>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium text-violet-600">≈ 2 minutes</span>
+            <button
+              type="button"
+              onClick={onFinish}
+              className="text-xs font-medium text-black/50 underline underline-offset-2 hover:text-black"
+            >
+              Skip — open full dashboard
+            </button>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {steps.map((step) => {
+            const Icon = step.icon;
+            return (
+              <Link
+                key={step.title}
+                href={step.href}
+                onClick={onFinish}
+                className="group flex items-start gap-3 rounded-2xl border border-black/5 bg-cream p-4 transition-colors hover:border-black/10 hover:bg-black/5"
+              >
+                <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${step.accent}`} />
+                <div>
+                  <p className="text-sm font-medium text-black">{step.title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">{step.desc}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </FadeIn>
+  );
+}
+
 export default function DashboardPage() {
+  // Show the get-started checklist until the member finishes (or dismisses) it.
+  // ?welcome=1 (from signup) forces it so new members see the next steps.
+  const [showOnboarding, setShowOnboarding] = React.useState(true);
+  React.useEffect(() => {
+    const url = new URLSearchParams(window.location.search);
+    if (
+      localStorage.getItem('chamai_onboarding_done') === '1' &&
+      url.get('welcome') !== '1'
+    ) {
+      setShowOnboarding(false);
+    }
+    setWelcomeFirstRun(url.get('welcome') === '1');
+  }, []);
+  const finishOnboarding = () => {
+    localStorage.setItem('chamai_onboarding_done', '1');
+    setShowOnboarding(false);
+  };
   const stats = [
     { label: 'Total Pool Value', value: '$48,920.00', change: '+12.4%', icon: LineChart, color: 'text-emerald-600' },
     { label: 'Active Circles', value: '3', change: 'Stable', icon: Users, color: 'text-blue-600' },
@@ -65,10 +134,18 @@ export default function DashboardPage() {
   ];
 
   // MiroFish State - what YOU asked for!
-  const [activeTab, setActiveTab] = React.useState('ai-assistant');
+  const [activeTab, setActiveTab] = React.useState('overview');
   const [isSimulating, setIsSimulating] = React.useState(false);
   const [simulationComplete, setSimulationComplete] = React.useState(false);
   const [siteUploaded, setSiteUploaded] = React.useState(false);
+
+  // First-run detection: ?welcome=1 (set by signup) shows the calm onboarding
+  // screen instead of the full dashboard until the member finishes or skips it.
+  const [welcomeFirstRun, setWelcomeFirstRun] = React.useState(false);
+  const auth = useAuth();
+  const firstName = auth.status === 'authenticated' && auth.user?.name
+    ? auth.user.name.trim().split(' ')[0]
+    : '';
   
   // MiroFish generates these REALISTIC user agents to test your website
   const [miroFishAgents, setMiroFishAgents] = React.useState<MiroFishAgent[]>([
@@ -170,7 +247,13 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-medium tracking-tight text-black sm:text-4xl">
                 Command <span className="font-serif italic">Center.</span>
               </h1>
-              <p className="mt-1 text-black/50">Welcome back. Your agents are monitoring 3 active pools.</p>
+              <p className="mt-1 text-black/50">
+                {welcomeFirstRun
+                  ? "Let's set up your first circle — it takes about 2 minutes."
+                  : firstName
+                    ? `Welcome back, ${firstName}. Your agents are monitoring your pools.`
+                    : 'Welcome back. Your agents are monitoring your pools.'}
+              </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-100">
@@ -181,24 +264,110 @@ export default function DashboardPage() {
           </div>
         </FadeIn>
 
-        {/* Tabs System */}
+        {/* Get-started checklist so new members know exactly what to do.
+            On the very first run (?welcome=1) it IS the page — calm, with
+            one clear job — and the rest of the dashboard reveals after. */}
+        {showOnboarding && welcomeFirstRun && (
+          <>
+            <FadeIn direction="up" duration={0.5}>
+              <div className="mt-8 rounded-3xl bg-white p-8 sm:p-10 border border-black/5">
+                <h2 className="text-2xl font-medium leading-[1.15] tracking-[-0.02em] text-black">
+                  {firstName ? `Welcome, ${firstName}.` : 'Welcome.'} This is your
+                  workspace — it starts <span className="font-serif italic">empty on purpose.</span>
+                </h2>
+                <p className="mt-2 max-w-[520px] text-[15px] leading-[1.4] text-black/50">
+                  Complete the three steps below and your Command Center fills with
+                  your own real data. No demo numbers, no noise.
+                </p>
+              </div>
+            </FadeIn>
+            <OnboardingSteps onFinish={finishOnboarding} />
+          </>
+        )}
+        {showOnboarding && !welcomeFirstRun && (
+        <FadeIn direction="up" duration={0.5} delay={0.1}>
+          <div className="mt-6 rounded-3xl border border-violet-100 bg-white p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-medium tracking-tight text-black">
+                Get started<span className="font-serif italic"> — 3 steps:</span>
+              </h2>
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-medium text-violet-600">≈ 2 minutes</span>
+                <button
+                  type="button"
+                  onClick={finishOnboarding}
+                  aria-label="Dismiss get-started checklist"
+                  className="rounded-lg p-1 text-black/40 transition-colors hover:bg-black/5 hover:text-black"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <Link
+                href="/communities"
+                className="group flex items-start gap-3 rounded-2xl border border-black/5 bg-cream p-4 transition-colors hover:border-black/10 hover:bg-black/5"
+              >
+                <Users className="mt-0.5 h-5 w-5 shrink-0 text-violet-600" />
+                <div>
+                  <p className="text-sm font-medium text-black">1. Create your first circle</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">
+                    Name it, set the monthly amount — invite members later.
+                  </p>
+                </div>
+              </Link>
+              <Link
+                href="/copilot"
+                className="group flex items-start gap-3 rounded-2xl border border-black/5 bg-cream p-4 transition-colors hover:border-black/10 hover:bg-black/5"
+              >
+                <Cpu className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                <div>
+                  <p className="text-sm font-medium text-black">2. Meet your AI copilot</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">
+                    Ask anything — it reads your ledger and suggests next moves.
+                  </p>
+                </div>
+              </Link>
+              <Link
+                href="/gigs"
+                className="group flex items-start gap-3 rounded-2xl border border-black/5 bg-cream p-4 transition-colors hover:border-black/10 hover:bg-black/5"
+              >
+                <Briefcase className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+                <div>
+                  <p className="text-sm font-medium text-black">3. Post a paid gig</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">
+                    Milestone escrow keeps every payment safe until delivery.
+                  </p>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </FadeIn>
+        )}
+
+        {/* Tabs System — hidden during calm first-run until onboarding is done */}
+        {!welcomeFirstRun && (
+        <>
         <div className="mt-8 flex gap-2 rounded-2xl bg-black/5 p-1 w-fit">
           <button
-            onClick={() => setActiveTab('ai-assistant')}
-            className={`rounded-xl px-5 py-2 text-sm font-medium transition-all ${activeTab === 'ai-assistant' ? 'bg-white shadow-sm text-black' : 'text-black/50 hover:text-black'}`}
+            onClick={() => setActiveTab('overview')}
+            className={`rounded-xl px-5 py-2 text-sm font-medium transition-all ${activeTab === 'overview' ? 'bg-white shadow-sm text-black' : 'text-black/50 hover:text-black'}`}
           >
-            AI Assistant
+            Overview
           </button>
           <button
             onClick={() => setActiveTab('user-needs')}
             className={`rounded-xl px-5 py-2 text-sm font-medium transition-all ${activeTab === 'user-needs' ? 'bg-white shadow-sm text-black' : 'text-black/50 hover:text-black'}`}
           >
-            User Needs Hub
+            Insights Lab
+            <span className="ml-2 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
+              beta
+            </span>
           </button>
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'ai-assistant' && (
+        {activeTab === 'overview' && (
         <>
 
         {/* Top Stats Bento Grid */}        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -384,6 +553,7 @@ export default function DashboardPage() {
         </div>
         </>
         )}
+        </>)}
       </div>
     </div>
   );

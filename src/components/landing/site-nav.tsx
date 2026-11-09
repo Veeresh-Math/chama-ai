@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Logo } from './primitives';
+import { authClient, useAuth } from '@/lib/auth/client';
 
 const links = [
   { href: '#features', label: 'Product' },
@@ -16,19 +17,15 @@ const links = [
 
 export default function SiteNav() {
   const [open, setOpen] = React.useState(false);
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const router = useRouter();
+  const auth = useAuth();
+  const isLoggedIn = auth.status === 'authenticated';
 
-  const setLoggedIn = (bool: boolean) => {
-    localStorage.setItem('chamaai_logged_in', JSON.stringify(bool));
-    setIsLoggedIn(bool);
-  };
-
-  // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('chamaai_logged_in');
-    setIsLoggedIn(false);
+  // Real sign-out through the auth server, then land on the marketing home
+  const handleLogout = async () => {
+    await authClient.signOut();
     router.push('/');
+    router.refresh();
   };
 
   React.useEffect(() => {
@@ -39,15 +36,6 @@ export default function SiteNav() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
-
-  React.useEffect(() => {
-    const checkAuth = () => {
-      setIsLoggedIn(localStorage.getItem('chamaai_logged_in') === 'true');
-    };
-    checkAuth();
-    window.addEventListener('storage', checkAuth);
-    return () => window.removeEventListener('storage', checkAuth);
-  }, []);
 
   return (
     <header className="fixed inset-x-0 top-[22px] z-50 flex flex-col items-center gap-2 px-4 sm:top-[30px]">
@@ -73,12 +61,20 @@ export default function SiteNav() {
 
         <div className="hidden items-center gap-3 md:flex">
           {isLoggedIn ? (
-            <button
-              onClick={handleLogout}
-              className="inline-flex h-9 items-center justify-center rounded-lg bg-red-600 px-4 text-[14px] font-medium leading-[0.95] tracking-[-0.02em] text-white transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
-            >
-              Log out
-            </button>
+            <>
+              <Link
+                href="/dashboard"
+                className="text-[15px] font-medium leading-[0.95] tracking-[-0.02em] text-black/55 transition-colors hover:text-black"
+              >
+                {auth.user?.name?.split(' ')[0] ?? 'Dashboard'}
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="inline-flex h-9 items-center justify-center rounded-lg border border-black/10 px-4 text-[14px] font-medium leading-[0.95] tracking-[-0.02em] text-black transition-colors hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+              >
+                Log out
+              </button>
+            </>
           ) : (
             <>
               <Link
@@ -91,7 +87,7 @@ export default function SiteNav() {
                 href="/signup"
                 className="inline-flex h-9 items-center justify-center rounded-lg bg-black px-4 text-[14px] font-medium leading-[0.95] tracking-[-0.02em] text-white transition-colors hover:bg-black/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
               >
-                Start free
+                Sign up
               </Link>
             </>
           )}
@@ -138,20 +134,44 @@ export default function SiteNav() {
           ))}
         </div>
         <div className="mt-2 flex flex-col gap-2 border-t border-black/10 px-2 pt-3 pb-1">
-          <Link
-            href="/login"
-            onClick={() => setOpen(false)}
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-black/10 text-[15px] font-medium text-black"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/signup"
-            onClick={() => setOpen(false)}
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-black text-[15px] font-medium text-white"
-          >
-            Start free
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link
+                href="/dashboard"
+                onClick={() => setOpen(false)}
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-black text-[15px] font-medium text-white"
+              >
+                Go to dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  void handleLogout();
+                }}
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-black/10 text-[15px] font-medium text-black"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-black/10 text-[15px] font-medium text-black"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setOpen(false)}
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-black text-[15px] font-medium text-white"
+              >
+                Sign up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

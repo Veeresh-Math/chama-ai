@@ -134,7 +134,7 @@ export default function DemoFlow() {
             <SectionHeading
               tone="dark"
               align="left"
-              badge="The 90-second demo"
+              badge="See it in action"
               title="From one sentence to settled money"
               lede="No product tour. One request, one approval, one real PayPal transaction — with the reasoning visible the whole way."
             />

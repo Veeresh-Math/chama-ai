@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { auth } from '@/lib/auth/server';
 import { db } from '@/db';
 import { communities, communityMembers } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
-import { v4 as uuidv4 } from 'uuid';
+import { eq } from 'drizzle-orm';
 
-async function getUserId(request: NextRequest): Promise<string | null> {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) return null;
-  const token = authHeader.slice(7);
-  const { data: { user } } = await supabaseAdmin.auth.getUser(token);
-  return user?.id || null;
+async function getUserId(): Promise<string | null> {
+  const { data: session } = await auth.getSession();
+  return session?.user?.id || null;
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const userId = await getUserId(request);
+    const userId = await getUserId();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const userCommunities = await db.query.communities.findMany({
@@ -36,7 +32,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const userId = await getUserId(request);
+    const userId = await getUserId();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { name, description, monthlyContribution, currency, autoDistribute, memberEmails } = await request.json();

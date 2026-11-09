@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Bot, Users, Lock, ShieldCheck, Cable } from 'lucide-react';
-import { ScrollReveal, StaggerContainer } from '@/components/animations';
+import { ScrollReveal } from '@/components/animations';
 import { Container } from './primitives';
 import { cn } from '@/lib/utils';
 
@@ -152,6 +152,12 @@ const features = [
 ];
 
 export default function Features() {
+  // Progressive disclosure: pickers stay compact; body + visual only for
+  // the feature the visitor actually clicked (defaults to the first).
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const active = features[activeIndex];
+  const ActiveIcon = active.icon;
+
   return (
     <section id="features" className="py-28 sm:py-40">
       <Container>
@@ -160,40 +166,67 @@ export default function Features() {
             Everything a money-pooling group actually needs.
           </h2>
           <p className="mt-6 max-w-[560px] text-base leading-[1.3] text-black/50">
-            One workspace for the contributions, the conversations, the compliance
-            and the payouts — with an AI copilot that understands collective
-            finances.
+            Click any feature to see how it works — nothing more, nothing less.
           </p>
         </ScrollReveal>
 
+        {/* Feature picker */}
         <ScrollReveal direction="up" distance={30}>
-          <StaggerContainer className="mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => {
+          <div
+            role="tablist"
+            aria-label="Features"
+            className="mt-14 flex snap-x gap-2 overflow-x-auto pb-2 lg:flex-wrap lg:overflow-visible"
+          >
+            {features.map((feature, i) => {
               const Icon = feature.icon;
+              const selected = i === activeIndex;
               return (
-                <article
+                <button
                   key={feature.title}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => setActiveIndex(i)}
                   className={cn(
-                    'flex min-h-[350px] flex-col justify-between gap-10 rounded-3xl bg-black/5 p-8 transition-colors duration-300 sm:p-10',
-                    feature.span
+                    'flex shrink-0 snap-start items-center gap-2.5 rounded-2xl px-5 py-3.5 text-[15px] font-medium leading-[1] tracking-[-0.02em] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black',
+                    selected
+                      ? 'bg-black text-white'
+                      : 'bg-black/5 text-black/55 hover:bg-black/10 hover:text-black'
                   )}
                 >
-                  <div>
-                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-[4px] bg-black text-white">
-                      <Icon className="h-5 w-5" aria-hidden="true" />
-                    </span>
-                    <h3 className="mt-5 text-xl font-medium leading-[1.1] tracking-[-0.03em] text-black">
-                      {feature.title}
-                    </h3>
-                    <p className="mt-3 max-w-[560px] text-base leading-[1.35] text-black/50">
-                      {feature.body}
-                    </p>
-                  </div>
-                  {feature.visual}
-                </article>
+                  <Icon
+                    className={cn('h-[18px] w-[18px]', selected ? 'text-white' : 'text-black/50')}
+                    aria-hidden="true"
+                  />
+                  {feature.title}
+                </button>
               );
             })}
-          </StaggerContainer>
+          </div>
+        </ScrollReveal>
+
+        {/* Detail panel for the selected feature only */}
+        <ScrollReveal direction="up" distance={20} className="mt-3">
+          <article
+            key={active.title}
+            className={cn(
+              'flex min-h-[350px] flex-col justify-between gap-10 rounded-3xl bg-black/5 p-8 sm:p-10',
+              active.span
+            )}
+          >
+            <div>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-[4px] bg-black text-white">
+                <ActiveIcon className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h3 className="mt-5 text-xl font-medium leading-[1.1] tracking-[-0.03em] text-black">
+                {active.title}
+              </h3>
+              <p className="mt-3 max-w-[560px] text-base leading-[1.35] text-black/50">
+                {active.body}
+              </p>
+            </div>
+            {active.visual}
+          </article>
         </ScrollReveal>
       </Container>
     </section>

@@ -7,6 +7,7 @@ import { ArrowRight, Check, TrendingUp, Sparkles, ShieldCheck } from 'lucide-rea
 import { FadeIn } from '@/components/animations';
 import { Container, CtaLink } from './primitives';
 import LiquidGlass from './liquid-glass';
+import { useAuth } from '@/lib/auth/client';
 
 const members = ['AK', 'JM', 'SN', 'FO', 'MN'];
 
@@ -160,13 +161,8 @@ function ProductMock() {
 }
 
 export default function Hero() {
-  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
-
-  React.useEffect(() => {
-    if (localStorage.getItem('chamaai_logged_in') === 'true') {
-      setIsLoggedIn(true);
-    }
-  }, []);
+  const auth = useAuth();
+  const isLoggedIn = auth.status === 'authenticated';
 
   const ctaHref = isLoggedIn ? '/dashboard' : '/signup';
 
@@ -217,13 +213,10 @@ export default function Hero() {
           </FadeIn>
 
           <FadeIn direction="up" distance={15} duration={0.6} delay={0.7}>
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <div className="mt-10 flex justify-center">
               <CtaLink href={ctaHref}>
                 {isLoggedIn ? 'Go to Command Center' : 'Start your collective — free'}
                 <ArrowRight className="h-4 w-4" />
-              </CtaLink>
-              <CtaLink href="#demo" variant="ghost">
-                Watch the flow
               </CtaLink>
             </div>
           </FadeIn>

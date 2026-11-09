@@ -1,21 +1,35 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { FadeIn } from '@/components/animations';
 import { Logo } from '@/components/landing/primitives';
+import { authClient, authErrorMessage, safeNextPath, ensureAppUser, MIN_AUTH_SPINNER_MS, wait, useRedirectIfAuthenticated } from '@/lib/auth/client';
+import { Spinner } from '@/components/ui/spinner';
 
-export default function SignupPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+function SignupForm() {
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const next = searchParams.get('next');
+
+  // Signed-in visitors don't sign up twice — take them straight inside.
+  const redirecting = useRedirectIfAuthenticated();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // Validate inputs
+
+    if (name.trim().length < 2) {
+      setError('Please enter your name');
+      return;
+    }
     if (!email.includes('@')) {
       setError('Please enter a valid email address');
       return;
@@ -26,22 +40,48 @@ export default function SignupPage() {
     }
 
     setIsLoading(true);
-    try {
-      // Simulate API call (replace with your actual auth logic)
-      console.log('Creating account with:', email, password);
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // FIX: Automatically log the user in after successful signup
-      localStorage.setItem('chamaai_logged_in', 'true');
-      
-      alert('Account created successfully! Welcome to Cham.ai.');
-      window.location.href = '/'; // Redirect to home, Nav will now show "Logged In"
-    } catch (err) {
-      setError('Failed to create account. Please try again.');
-    } finally {
+    const [createResult] = await Promise.all([
+      authClient.signUp.email({
+        email: email.trim(),
+        password,
+        name: name.trim(),
+      }),
+      // Keep the spinner visible long enough to register as motion
+      wait(MIN_AUTH_SPINNER_MS),
+    ]);
+    const { error: authError } = createResult;
+
+    if (authError) {
+      // 422 from the auth server usually means the email already exists
+      setError(
+        authError.status === 422
+          ? 'That email already has an account — try signing in instead.'
+          : authErrorMessage(authError)
+      );
       setIsLoading(false);
+      return;
     }
+
+    // Mirror the auth user into the app's users table (cookie-verifiable server-side)
+    await ensureAppUser();
+
+    // Signed up ⇒ session established ⇒ straight into the app (no
+    // "sign in again" hoop), landing on the page they came from.
+    const target = safeNextPath(next, '/dashboard?welcome=1');
+    router.replace(target);
   };
+
+  if (redirecting) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-5 py-12">
+        <Logo />
+        <div className="mt-8 flex items-center gap-3 rounded-full bg-white px-5 py-3 ring-1 ring-black/5">
+          <Spinner className="text-black" />
+          <p className="text-sm text-black/60">You&apos;re already signed in — opening your dashboard…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-cream px-5 py-12">
@@ -52,7 +92,7 @@ export default function SignupPage() {
 
         <div className="rounded-3xl border border-black/5 bg-white p-8 sm:p-10">
           <h1 className="text-[28px] font-medium leading-[1.1] tracking-[-0.02em] text-black">
-            Start your <span className="font-serif italic">circle.</span>
+            Create your <span className="font-serif italic">account.</span>
           </h1>
           <p className="mt-2 text-[15px] leading-[1.4] text-black/50">
             Free until you&apos;re distributing — no card needed.
@@ -65,10 +105,23 @@ export default function SignupPage() {
               </div>
             )}
             <div>
-              <label
-                htmlFor="email"
-                className="block text-[13px] font-medium text-black/60"
-              >
+              <label htmlFor="name" className="block text-[13px] font-medium text-black/60">
+                Your name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+                placeholder="Amina Otieno"
+                className="mt-1.5 h-11 w-full rounded-xl border border-black/10 bg-white px-3.5 text-[15px] text-black outline-none transition-colors placeholder:text-black/30 focus:border-black/40"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-[13px] font-medium text-black/60">
                 Email
               </label>
               <input
@@ -84,10 +137,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-[13px] font-medium text-black/60"
-              >
+              <label htmlFor="password" className="block text-[13px] font-medium text-black/60">
                 Password
               </label>
               <input
@@ -105,19 +155,26 @@ export default function SignupPage() {
               </p>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isLoading}
-              className="btn-dark w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-dark w-full inline-flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Creating account...' : 'Create account'}
+              {isLoading ? (
+                <>
+                  <Spinner className="text-white" />
+                  <span>Signing you up…</span>
+                </>
+              ) : (
+                'Sign up'
+              )}
             </button>
           </form>
 
           <p className="mt-6 text-center text-[14px] text-black/50">
             Already have an account?{' '}
             <Link
-              href="/login"
+              href={{ pathname: '/login', query: next ? { next } : {} }}
               className="text-azure underline underline-offset-2 hover:text-black"
             >
               Sign in
@@ -130,5 +187,13 @@ export default function SignupPage() {
         </p>
       </FadeIn>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   );
 }

@@ -1,17 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { auth } from '@/lib/auth/server';
 import { db } from '@/db';
 import { communities, communityMembers, distributions, transactions } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { createSplitPayment } from '@/lib/paypal';
 import { enqueueJob, QUEUE_KEYS } from '@/lib/queue';
 
-async function getUserId(request: NextRequest): Promise<string | null> {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader?.startsWith('Bearer ')) return null;
-  const token = authHeader.slice(7);
-  const { data: { user } } = await supabaseAdmin.auth.getUser(token);
-  return user?.id || null;
+async function getUserId(): Promise<string | null> {
+  const { data: session } = await auth.getSession();
+  return session?.user?.id || null;
 }
 
 export async function POST(
@@ -19,7 +16,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getUserId(request);
+    const userId = await getUserId();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { id } = await params;

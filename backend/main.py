@@ -256,6 +256,49 @@ async def complete_milestone(gig_id: int, milestone_idx: int):
     # Logic for completing milestones and triggering council
     pass
 
+# --- ANALYTICS ---
+@app.get("/analytics")
+async def get_analytics():
+    """Return aggregate analytics across all communities and gigs."""
+    communities = state["communities"]
+    gigs = state["gig_jobs"]
+
+    total_communities = len(communities)
+    total_members = sum(len(c.get("members", [])) for c in communities)
+    total_funds = sum(c.get("total_funds", 0) for c in communities)
+    avg_trust = (
+        sum(c.get("trust_score", 0) for c in communities) / total_communities
+        if total_communities else 0
+    )
+
+    total_gigs = len(gigs)
+    total_gig_budget = sum(g.get("budget", 0) for g in gigs)
+    completed_gigs = sum(1 for g in gigs if g.get("completed"))
+
+    community_breakdown = [
+        {
+            "id": c.get("id"),
+            "name": c.get("name"),
+            "trust_score": c.get("trust_score", 0),
+            "total_funds": c.get("total_funds", 0),
+            "member_count": len(c.get("members", [])),
+        }
+        for c in communities
+    ]
+
+    return {
+        "summary": {
+            "total_communities": total_communities,
+            "total_members": total_members,
+            "total_funds": total_funds,
+            "avg_trust_score": round(avg_trust, 1),
+            "total_gigs": total_gigs,
+            "total_gig_budget": total_gig_budget,
+            "completed_gigs": completed_gigs,
+        },
+        "community_breakdown": community_breakdown,
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

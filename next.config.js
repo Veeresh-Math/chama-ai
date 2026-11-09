@@ -9,6 +9,19 @@ const nextConfig = {
       bodySizeLimit: '2mb',
     },
   },
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      // Avoid serializing huge strings in the client-side webpack cache,
+      // which triggers PackFileCacheStrategy deserialization warnings.
+      config.cache = {
+        type: 'filesystem',
+        buildDependencies: {
+          config: [__filename],
+        },
+      };
+    }
+    return config;
+  },
   async headers() {
     return [
       {

@@ -2,6 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { gsap } from 'gsap';
 import {
   LayoutDashboard,
   Users,
@@ -21,25 +23,18 @@ import {
 import { FadeIn } from '@/components/animations';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/lib/auth/client';
-
-interface StatCard {
-  label: string;
-  value: string;
-  change: string;
-  icon: React.ElementType;
-  color: string;
-  bg: string;
-}
-
-interface QuickAction {
-  title: string;
-  desc: string;
-  href: string;
-  icon: React.ElementType;
-  color: string;
-}
+import {
+  PageShell,
+  StatCard,
+  ActionCard,
+  GsapCard,
+  SectionCard,
+  COLORS,
+} from '@/components/design-system';
 
 interface MiroFishAgent {
   id: string;
@@ -60,46 +55,51 @@ interface MiroFishRecommendation {
   supportingAgents: string[];
 }
 
-function StatCard({ stat }: { stat: StatCard }) {
+function OnboardingSteps({ onFinish }: { onFinish: () => void }) {
+  const steps = [
+    { icon: Users, accent: 'text-violet-600', title: 'Create your first circle', desc: 'Name it, set the monthly amount — invite members later.', href: '/communities' },
+    { icon: Cpu, accent: 'text-blue-600', title: 'Meet your AI copilot', desc: 'Ask anything — it reads your ledger and suggests next moves.', href: '/copilot' },
+    { icon: Briefcase, accent: 'text-emerald-600', title: 'Post a paid gig', desc: 'Milestone escrow keeps every payment safe until delivery.', href: '/gigs' },
+  ];
   return (
-    <div
-      className={cn(
-        'group relative flex flex-col rounded-3xl border border-black/5 bg-white p-6 sm:p-8 shadow-sm',
-        'transition-all duration-300 hover:border-black/20 hover:shadow-xl hover:-translate-y-1',
-      )}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.bg}`}>
-          <stat.icon className={`h-5 w-5 ${stat.color}`} />
+    <FadeIn direction="up" duration={0.5} delay={0.15}>
+      <GsapCard className="bg-white p-6 border border-violet-100 sm:p-8">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium tracking-tight text-black">
+            Do these <span className="font-serif italic">3 things:</span>
+          </h3>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-medium text-violet-600">≈ 2 minutes</span>
+            <button
+              type="button"
+              onClick={onFinish}
+              className="text-xs font-medium text-black/50 underline underline-offset-2 hover:text-black"
+            >
+              Skip — open full dashboard
+            </button>
+          </div>
         </div>
-        <span className={`text-xs font-medium ${stat.color}`}>{stat.change}</span>
-      </div>
-      <p className="text-sm font-medium text-black/50">{stat.label}</p>
-      <p className="mt-1 text-2xl font-medium tracking-tight text-black">{stat.value}</p>
-    </div>
-  );
-}
-
-function ActionCard({ action }: { action: QuickAction }) {
-  return (
-    <Link
-      href={action.href}
-      className={cn(
-        'group flex flex-col rounded-3xl border border-black/5 bg-white p-6 sm:p-8 transition-all duration-300',
-        'hover:border-black/20 hover:shadow-xl hover:-translate-y-1',
-      )}
-    >
-      <div className="flex items-center justify-between mb-6">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color.replace('text', 'bg')}`}>
-          <action.icon className="h-5 w-5" />
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {steps.map((step) => {
+            const Icon = step.icon;
+            return (
+              <Link
+                key={step.title}
+                href={step.href}
+                onClick={onFinish}
+                className="group flex items-start gap-3 rounded-2xl border border-black/5 bg-cream p-4 transition-colors hover:border-black/10 hover:bg-black/5"
+              >
+                <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${step.accent}`} />
+                <div>
+                  <p className="text-sm font-medium text-black">{step.title}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">{step.desc}</p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
-        <ArrowUpRight className="h-4 w-4 text-black/20 group-hover:text-black transition-colors" />
-      </div>
-      <h3 className="text-lg font-medium text-black mb-2 group-hover:text-black/80 transition-colors">
-        {action.title}
-      </h3>
-      <p className="text-sm text-black/50 leading-relaxed">{action.desc}</p>
-    </Link>
+      </GsapCard>
+    </FadeIn>
   );
 }
 
@@ -125,70 +125,18 @@ export default function DashboardPage() {
     ? auth.user.name.trim().split(' ')[0]
     : '';
 
-  const stats: StatCard[] = [
-    {
-      label: 'Total Pool Value',
-      value: '$48,920.00',
-      change: '+12.4%',
-      icon: LineChart,
-      color: 'text-emerald-600',
-      bg: 'bg-emerald-50',
-    },
-    {
-      label: 'Active Circles',
-      value: '3',
-      change: 'Stable',
-      icon: Users,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
-    },
-    {
-      label: 'Agent Trust Score',
-      value: '98.2%',
-      change: 'Optimized',
-      icon: ShieldCheck,
-      color: 'text-violet-600',
-      bg: 'bg-violet-50',
-    },
-    {
-      label: 'Pending Escrows',
-      value: '$1,200.00',
-      change: '2 active',
-      icon: Briefcase,
-      color: 'text-orange-600',
-      bg: 'bg-orange-50',
-    },
+  const stats = [
+    { label: 'Total Pool Value', value: '$48,920.00', change: '+12.4%', icon: LineChart, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Active Circles', value: '3', change: 'Stable', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Agent Trust Score', value: '98.2%', change: 'Optimized', icon: ShieldCheck, color: 'text-violet-600', bg: 'bg-violet-50' },
+    { label: 'Pending Escrows', value: '$1,200.00', change: '2 active', icon: Briefcase, color: 'text-orange-600', bg: 'bg-orange-50' },
   ];
 
-  const actions: QuickAction[] = [
-    {
-      title: 'Circle Management',
-      desc: 'Manage payouts and contributions',
-      href: '/communities',
-      icon: Users,
-      color: 'text-violet-600',
-    },
-    {
-      title: 'Financial Analytics',
-      desc: 'Track growth and yield trends',
-      href: '/analytics',
-      icon: LineChart,
-      color: 'text-blue-600',
-    },
-    {
-      title: 'AI Copilot',
-      desc: 'Consult the Agent Council',
-      href: '/copilot',
-      icon: Cpu,
-      color: 'text-violet-600',
-    },
-    {
-      title: 'Gig Escrow',
-      desc: 'Manage worker milestones',
-      href: '/gigs',
-      icon: Briefcase,
-      color: 'text-emerald-600',
-    },
+  const actions = [
+    { title: 'Circle Management', desc: 'Manage payouts and contributions', href: '/communities', icon: Users, color: 'text-violet-600' },
+    { title: 'Financial Analytics', desc: 'Track growth and yield trends', href: '/analytics', icon: LineChart, color: 'text-blue-600' },
+    { title: 'AI Copilot', desc: 'Consult the Agent Council', href: '/copilot', icon: Cpu, color: 'text-violet-600' },
+    { title: 'Gig Escrow', desc: 'Manage worker milestones', href: '/gigs', icon: Briefcase, color: 'text-emerald-600' },
   ];
 
   // MiroFish Simulation state
@@ -276,6 +224,17 @@ export default function DashboardPage() {
     setSiteUploaded(true);
   };
 
+  // GSAP entrance animation for page elements
+  useEffect(() => {
+    gsap.from('.gsap-fade-up', {
+      y: 30,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.1,
+      ease: 'power2.out',
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-cream">
       {/* Onboarding overlay (first-run only) */}
@@ -297,9 +256,7 @@ export default function DashboardPage() {
                 <Users className="mt-0.5 h-5 w-5 shrink-0 text-violet-600" />
                 <div>
                   <p className="text-sm font-medium text-black">Create your first circle</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">
-                    Name it, set the monthly amount — invite members later.
-                  </p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">Name it, set the monthly amount — invite members later.</p>
                 </div>
               </Link>
               <Link
@@ -310,9 +267,7 @@ export default function DashboardPage() {
                 <Cpu className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
                 <div>
                   <p className="text-sm font-medium text-black">Meet your AI copilot</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">
-                    Ask anything — it reads your ledger and suggests next moves.
-                  </p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">Ask anything — it reads your ledger and suggests next moves.</p>
                 </div>
               </Link>
               <Link
@@ -323,9 +278,7 @@ export default function DashboardPage() {
                 <Briefcase className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
                 <div>
                   <p className="text-sm font-medium text-black">Post a paid gig</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">
-                    Milestone escrow keeps every payment safe until delivery.
-                  </p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-black/50">Milestone escrow keeps every payment safe until delivery.</p>
                 </div>
               </Link>
             </div>
@@ -363,89 +316,103 @@ export default function DashboardPage() {
         </FadeIn>
 
         {/* Stats Bento Grid */}
-        <FadeIn direction="up" duration={0.5}>
+        <FadeIn direction="up" duration={0.5} className="gsap-fade-up">
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat, i) => (
-              <StatCard key={i} stat={stat} />
+              <StatCard
+                key={i}
+                label={stat.label}
+                value={stat.value}
+                sublabel={stat.change}
+                icon={stat.icon}
+                colorClass={stat.color}
+                bg={stat.bg}
+              />
             ))}
           </div>
         </FadeIn>
 
         {/* Actions Grid */}
-        <FadeIn direction="up" duration={0.5} delay={0.1}>
+        <FadeIn direction="up" duration={0.5} delay={0.1} className="gsap-fade-up">
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {actions.map((action, i) => (
-              <ActionCard key={i} action={action} />
+              <ActionCard
+                key={i}
+                title={action.title}
+                desc={action.desc}
+                href={action.href}
+                icon={action.icon}
+                color={action.color}
+              />
             ))}
           </div>
         </FadeIn>
 
         {/* System Status */}
-        <FadeIn direction="up" duration={0.5} delay={0.2}>
-          <div className="mt-10 rounded-3xl border border-black/5 bg-white p-6 sm:p-8 text-center shadow-sm">
+        <FadeIn direction="up" duration={0.5} delay={0.2} className="gsap-fade-up">
+          <GsapCard className="mt-10 rounded-3xl border border-black/5 bg-white p-6 sm:p-8 text-center shadow-sm">
             <p className="text-sm text-black/40">
               All transactions are settled via{' '}
               <span className="font-medium text-black">PayPal REST API</span> and{' '}
               <span className="font-medium text-black">PYUSD</span>. Security audited by Agent Council.
             </p>
-          </div>
+          </GsapCard>
         </FadeIn>
 
         {/* User Needs Hub (MiroFish) */}
         {activeTab === 'user-needs' && (
           <>
             <FadeIn direction="up" duration={0.5}>
-              <div className="mt-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-3xl border border-black/5 bg-white p-6 sm:p-8 shadow-sm">
-                <div>
-                  <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-black/40">
-                    <Brain className="h-3 w-3 text-violet-600" />
-                    MiroFish Simulation Engine
+              <SectionCard title="MiroFish Simulation Engine">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-black/40">
+                      <Brain className="h-3 w-3 text-violet-600" />
+                      MiroFish Simulation Engine
+                    </div>
+                    <h2 className="mt-2 text-xl font-medium tracking-tight text-black">
+                      Real-user agents already <span className="font-serif italic text-black/70">tested your platform.</span>
+                    </h2>
+                    <p className="mt-1 text-sm text-black/50 max-w-lg leading-relaxed">
+                      {miroFishAgents.length} simulated personas matched to your real member base surfaced {miroFishRecommendations.length} high-impact needs.
+                    </p>
                   </div>
-                  <h2 className="mt-2 text-xl font-medium tracking-tight text-black">
-                    Real-user agents already <span className="font-serif italic text-black/70">tested your platform.</span>
-                  </h2>
-                  <p className="mt-1 text-sm text-black/50 max-w-lg leading-relaxed">
-                    {miroFishAgents.length} simulated personas matched to your real member base surfaced {miroFishRecommendations.length} high-impact needs.
-                  </p>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={handleSiteUpload}
+                      disabled={siteUploaded}
+                      className="rounded-full px-5 h-11 border-black/10"
+                    >
+                      <FileUp className="h-4 w-4 mr-2" />
+                      {siteUploaded ? 'Latest Build Indexed' : 'Re-index Build'}
+                    </Button>
+                    <Button
+                      onClick={runMiroFishSimulation}
+                      disabled={!siteUploaded || isSimulating}
+                      className="rounded-full px-6 h-11 bg-black text-white hover:bg-black/90"
+                    >
+                      {isSimulating ? (
+                        <>
+                          <Clock className="h-4 w-4 mr-2 animate-pulse" />
+                          Simulating…
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-4 w-4 mr-2" />
+                          {simulationComplete ? 'Re-run Simulation' : 'Run Simulation'}
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleSiteUpload}
-                    disabled={siteUploaded}
-                    className="rounded-full px-5 h-11 border-black/10"
-                  >
-                    <FileUp className="h-4 w-4 mr-2" />
-                    {siteUploaded ? 'Latest Build Indexed' : 'Re-index Build'}
-                  </Button>
-                  <Button
-                    onClick={runMiroFishSimulation}
-                    disabled={!siteUploaded || isSimulating}
-                    className="rounded-full px-6 h-11 bg-black text-white hover:bg-black/90"
-                  >
-                    {isSimulating ? (
-                      <>
-                        <Clock className="h-4 w-4 mr-2 animate-pulse" />
-                        Simulating…
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4 mr-2" />
-                        {simulationComplete ? 'Re-run Simulation' : 'Run Simulation'}
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
+              </SectionCard>
             </FadeIn>
 
             <FadeIn direction="up" duration={0.5} delay={0.1}>
               <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {miroFishAgents.map((agent) => (
-                  <div
-                    key={agent.id}
-                    className="rounded-3xl border border-black/5 bg-white p-6 sm:p-8 shadow-sm transition-all hover:border-black/10 hover:shadow-md h-full flex flex-col"
-                  >
+                  <GsapCard key={agent.id} className="flex flex-col h-full">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="relative h-10 w-10 shrink-0">
                         <img
@@ -477,23 +444,16 @@ export default function DashboardPage() {
                         </span>
                       ))}
                     </div>
-                  </div>
+                  </GsapCard>
                 ))}
               </div>
             </FadeIn>
 
             <FadeIn direction="up" duration={0.5} delay={0.2}>
-              <div className="mt-10 rounded-3xl border border-black/5 bg-white p-6 sm:p-8 shadow-sm">
-                <div className="flex items-center gap-2 text-violet-700 mb-4">
-                  <Sparkles className="h-5 w-5" />
-                  <span className="text-sm font-bold uppercase tracking-wider">Recommended Next Builds</span>
-                </div>
+              <SectionCard title="Recommended Next Builds">
                 <div className="space-y-3">
                   {miroFishRecommendations.map((rec) => (
-                    <div
-                      key={rec.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-violet-100 bg-violet-50/50 p-4 transition-all hover:bg-violet-100/50"
-                    >
+                    <GsapCard key={rec.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-violet-100 bg-violet-50/50 p-4">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-semibold text-violet-900">{rec.title}</p>
@@ -512,20 +472,16 @@ export default function DashboardPage() {
                         <Badge
                           className={cn(
                             'rounded-full text-[10px] font-bold uppercase tracking-wider border-0',
-                            rec.priority === 'high'
-                              ? 'bg-red-500 text-white'
-                              : rec.priority === 'medium'
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-black/10 text-black',
+                            rec.priority === 'high' ? 'bg-red-500 text-white' : rec.priority === 'medium' ? 'bg-amber-500 text-white' : 'bg-black/10 text-black',
                           )}
                         >
                           {rec.priority}
                         </Badge>
                       </div>
-                    </div>
+                    </GsapCard>
                   ))}
                 </div>
-              </div>
+              </SectionCard>
             </FadeIn>
           </>
         )}

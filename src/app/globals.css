@@ -58,12 +58,13 @@
      -webkit-text-size-adjust: 100%;
    }
     body {
-      background-color: #eaeaea;
+      background-color: #EAEAEA;
       color: #0f0f0f;
+      font-family: 'Switzer', 'Inter', system-ui, sans-serif;
       font-size: 16px;
       line-height: 1.3;
       text-rendering: optimizeLegibility;
-    }
+     }
    ::selection {
      background-color: #0f0f0f;
      color: #ffffff;
@@ -93,5 +94,24 @@
 
   .chip-dark {
     @apply inline-flex h-9 items-center gap-2.5 rounded-lg bg-white/5 px-3 text-sm font-medium leading-[0.95] text-white;
+  }
+
+  /* Unified brand button */
+  .btn-brand {
+    @apply inline-flex h-[42px] items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-medium leading-[0.95] tracking-[-0.02em] bg-black text-white transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 hover:bg-black/90;
+  }
+
+  .btn-brand-ghost {
+    @apply inline-flex h-[42px] items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-medium leading-[0.95] tracking-[-0.02em] bg-black/5 text-black transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 hover:bg-black/10 hover:text-black;
+  }
+
+  /* Unified card */
+  .card-brand {
+    @apply rounded-3xl border border-black/5 bg-white p-6 shadow-sm transition-all duration-300 hover:border-black/20 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  /* Unified section header */
+  .section-header {
+    @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4;
   }
 }

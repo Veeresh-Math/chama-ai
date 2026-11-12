@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -64,10 +65,16 @@ export default function CommunitiesPage() {
     loadCommunities();
   }, []);
 
+  const router = useRouter();
+
   async function loadCommunities() {
     try {
       setLoading(true);
       const res = await fetch('/api/communities', { credentials: 'include' });
+      if (res.status === 401) {
+        router.push('/login');
+        return;
+      }
       if (!res.ok) throw new Error('Failed to load communities');
       const data = await res.json();
       setCommunities(data.communities || []);
@@ -124,6 +131,86 @@ export default function CommunitiesPage() {
         <Button onClick={() => { setError(null); setLoading(true); loadCommunities(); }} className="mt-4 rounded-xl">
           Retry
         </Button>
+      </div>
+    );
+  }
+
+  if (communities.length === 0 && !loading && !error) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center text-center py-20">
+        <Users className="h-12 w-12 text-black/10 mb-4" />
+        <h3 className="text-lg font-medium text-black">No collectives yet</h3>
+        <p className="text-black/50 max-w-sm mt-2">
+          Create your first wealth collective to start pooling contributions, tracking trust scores, and running agentic distributions.
+        </p>
+        <Button
+          onClick={() => setShowCreateDialog(true)}
+          className="mt-6 rounded-full px-6 h-11 bg-black text-white hover:bg-black/90"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Create First Collective
+        </Button>
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogTrigger asChild>
+            <span className="pointer-events-none" />
+          </DialogTrigger>
+          <DialogContent className="rounded-3xl max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-medium">New Collective</DialogTitle>
+            </DialogHeader>
+            <form
+              className="space-y-6 py-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                handleCreate({
+                  name: formData.get('name') as string,
+                  monthlyContribution: Number(formData.get('monthlyContribution')),
+                  currency: formData.get('currency') as string,
+                  description: formData.get('description') as string,
+                  memberEmails: (formData.get('memberEmails') as string).split(',').map(e => e.trim()).filter(Boolean),
+                  autoDistribute: formData.get('autoDistribute') === 'on',
+                });
+              }}
+            >
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-black/60">Collective Name</label>
+                  <Input name="name" className="rounded-xl border-black/10" placeholder="e.g., Nairobi Tech Savings" required />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-black/60">Monthly Contribution</label>
+                  <Input name="monthlyContribution" type="number" className="rounded-xl border-black/10" placeholder="100" required />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-black/60">Purpose & Vision</label>
+                <Textarea name="description" className="rounded-xl border-black/10" placeholder="What is this collective saving for?" rows={3} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-black/60">Member Emails (comma-separated)</label>
+                  <Input name="memberEmails" className="rounded-xl border-black/10" placeholder="alice@example.com, bob@example.com" required />
+              </div>
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-violet-50 border border-violet-100">
+                <div className="p-2 rounded-lg bg-violet-100 text-violet-600">
+                  <Brain className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-violet-900">Agentic Distribution</p>
+                  <p className="text-xs text-violet-700/80">Allow the Agent Council to autonomously distribute funds based on milestones.</p>
+                </div>
+                <input name="autoDistribute" type="checkbox" defaultChecked className="h-5 w-5 accent-violet-600" />
+              </div>
+              {error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{error}</div>
+              )}
+              <DialogFooter>
+                <Button type="button" variant="ghost" onClick={() => setShowCreateDialog(false)} className="rounded-xl">Cancel</Button>
+                <Button type="submit" disabled={creating} className="rounded-xl px-6">{creating ? 'Creating…' : 'Launch Collective'}</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -328,7 +415,7 @@ export default function CommunitiesPage() {
                                 <td className="px-6 py-4">
                                   <div className="flex items-center gap-3">
                                     <Avatar className="h-8 w-8 rounded-full bg-black/5">
-                                      <AvatarFallback className="text-xs">{member.name.charAt(0)}</AvatarFallback>
+                                      <AvatarFallback className="text-xs">{member.name?.charAt(0) ?? '?'}</AvatarFallback>
                                     </Avatar>
                                     <span className="font-medium text-black">{member.name}</span>
                                   </div>

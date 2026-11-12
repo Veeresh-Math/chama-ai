@@ -22,6 +22,7 @@ export default function HoverLift({
 
   useEffect(() => {
     if (!ref.current) return;
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     gsap.set(ref.current, {
       scale: scale,
@@ -47,7 +48,7 @@ export default function HoverLift({
     ref.current.addEventListener('mouseenter', onMouseEnter);
     ref.current.addEventListener('mouseleave', onMouseLeave);
 
-return () => {
+    return () => {
       if (ref.current) {
         ref.current.removeEventListener('mouseenter', onMouseEnter);
         ref.current.removeEventListener('mouseleave', onMouseLeave);

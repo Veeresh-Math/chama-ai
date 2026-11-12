@@ -92,7 +92,7 @@ export function GsapCard({
       ref={ref}
       onClick={onClick}
       className={cn(
-        'relative overflow-hidden transition-all duration-300',
+        'relative overflow-hidden transition-transform duration-300',
         className,
       )}
       style={{ boxShadow: SHADOW }}
@@ -131,7 +131,7 @@ export function StatCard({
     <GsapCard
       className={cn(
         'flex flex-col rounded-3xl border border-black/5 bg-white p-6 sm:p-8 shadow-sm',
-        'transition-all duration-300 hover:border-black/20 hover:shadow-xl hover:-translate-y-1',
+        'transition-transform duration-300 hover:border-black/20 hover:shadow-xl hover:-translate-y-1',
       )}
     >
       <div className="flex items-center justify-between mb-4">

@@ -7,10 +7,12 @@ import { FadeIn } from '@/components/animations';
 import { Logo } from '@/components/landing/primitives';
 import { authClient, authErrorMessage, safeNextPath, ensureAppUser, MIN_AUTH_SPINNER_MS, wait, useRedirectIfAuthenticated } from '@/lib/auth/client';
 import { Spinner } from '@/components/ui/spinner';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 function LoginForm() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [showPassword, setShowPassword] = React.useState(false);
   const [error, setError] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const router = useRouter();
@@ -124,16 +126,25 @@ function LoginForm() {
                   Forgot password?
                 </Link>
               </div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                placeholder="••••••••"
-                className="h-9 w-full border border-[#d4d4d4] bg-white px-3 text-sm text-[#0a0a0a] outline-none transition-colors placeholder:text-[#0a0a0a]/30 focus:border-[#0a0a0a]"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  className="h-9 w-full border border-[#d4d4d4] bg-white px-3 text-sm text-[#0a0a0a] outline-none transition-colors placeholder:text-[#0a0a0a]/30 focus:border-[#0a0a0a] pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#0a0a0a]/40 hover:text-[#0a0a0a]"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
 
             <button

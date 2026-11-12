@@ -44,13 +44,13 @@ function ProductMock() {
           <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
           <span className="uppercase tracking-widest">Live Logs</span>
         </div>
-        <div className="truncate">{activity}</div>
+        <div className="truncate" aria-live="polite">{activity}</div>
       </div>
 
       <LiquidGlass
             snapshot="#hero-visual-target"
             zIndex={3}
-            className="mx-auto w-full max-w-[560px] transition-all duration-500 group-hover:scale-[1.02]"
+            className="mx-auto w-full max-w-[560px] transition-transform duration-500 group-hover:scale-[1.02]"
           >
         <div className="rounded-3xl border border-gray-200 bg-white p-5 sm:p-8 shadow-sm">
           <div className="relative">
@@ -70,7 +70,7 @@ function ProductMock() {
                 </div>
               </div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-100">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
                 Live Treasury
               </span>
             </div>
@@ -85,7 +85,7 @@ function ProductMock() {
                 </p>
               </div>
               <p className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 ring-1 ring-emerald-100">
-                <TrendingUp className="h-3.5 w-3.5" />
+                <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
                 +12.4%
               </p>
             </div>
@@ -107,7 +107,7 @@ function ProductMock() {
             <div className="mt-8 rounded-2xl bg-violet-50/50 p-4 ring-1 ring-violet-100 shadow-sm relative overflow-hidden group/insight">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-violet-100/30 to-transparent -translate-x-full group-hover/insight:animate-[shimmer_2s_infinite] pointer-events-none" />
               <div className="flex items-center gap-2 text-xs font-bold text-violet-700 uppercase tracking-wider">
-                <Sparkles className="h-3 w-3" />
+                <Sparkles className="h-3 w-3" aria-hidden="true" />
                 Agent Council Insight
               </div>
               <p className="mt-2 text-[13px] leading-[1.5] text-violet-900/80">
@@ -147,7 +147,7 @@ function ProductMock() {
         <div className="absolute -bottom-6 -left-4 hidden w-64 rounded-2xl bg-white p-4 shadow-2xl ring-1 ring-gray-200 sm:block animate-bounce-subtle">
           <div className="flex items-start gap-3">
             <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 shadow-lg shadow-emerald-200">
-              <Check className="h-4 w-4 text-white" strokeWidth={3} />
+              <Check className="h-4 w-4 text-white" strokeWidth={3} aria-hidden="true" />
             </span>
             <div className="text-left">
               <p className="text-[13px] font-bold text-black tracking-tight">Payout Settled</p>
@@ -182,7 +182,7 @@ export default function Hero() {
           <div className="flex justify-center mb-8">
             <FadeIn direction="up" distance={20} duration={0.6}>
               <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-white/60 backdrop-blur-md ring-1 ring-white/10">
-                <ShieldCheck className="h-3 w-3 text-emerald-400" />
+                <ShieldCheck className="h-3 w-3 text-emerald-400" aria-hidden="true" />
                 <span className="tracking-tight">PayPal AI Hackathon 2026 Submission</span>
               </div>
             </FadeIn>

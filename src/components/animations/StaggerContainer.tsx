@@ -25,8 +25,9 @@ export default function StaggerContainer({
   const ref = useRef<HTMLDivElement>(null);
   const childrenArray = Array.isArray(children) ? children : [children];
 
-useEffect(() => {
+  useEffect(() => {
     if (!ref.current) return;
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const ctx = gsap.context(() => {
       const fromVars: Record<string, unknown> = {

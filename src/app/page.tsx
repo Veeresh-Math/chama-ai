@@ -15,7 +15,7 @@ export default function LandingPage() {
   return (
     <>
       <SiteNav />
-      <main>
+      <main id="main-content" className="scroll-mt-20">
         <Hero />
         <div className="relative z-10 -mt-10 rounded-t-[40px] bg-cream overflow-visible">
           <TrustBar />

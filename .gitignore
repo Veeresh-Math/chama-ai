@@ -1,9 +1,63 @@
-.vercel
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+
+# Next.js
 .next
 out
+build
+dist
+
+# Environment files (SECRETS - never commit)
+.env
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
 .env*.local
-*.tsbuildinfo
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 error.log
 server.log
+
+# TypeScript
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Opencode agent skills & config (may contain keys)
+.opencode/
+
+# Grook skills (may contain keys)
+.grook/
+
+# Brag video output
+brag-output*/
+brag-output-*/
+
+# Claude skills
+.claude/skills/
+
+# Agents skills
+.agents/skills/
+
+# Misc
+coverage/
+.nyc_output/

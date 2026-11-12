@@ -33,6 +33,7 @@ export default function FadeIn({
 
   useEffect(() => {
     if (!ref.current) return;
+    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const dir = directionMap[direction] || directionMap.up;
 
     const ctx = gsap.context(() => {

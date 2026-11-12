@@ -52,7 +52,7 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className={cn(sectionTones[tone], className)}>
+    <section id={id} className={cn(sectionTones[tone], 'scroll-mt-[120px]', className)}>
       {children}
     </section>
   );
@@ -142,7 +142,7 @@ export function CtaLink({
     <Link
       href={href}
       className={cn(
-        'inline-flex h-[42px] items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-medium leading-[0.95] tracking-[-0.02em] transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
+        'inline-flex h-[42px] items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-medium leading-[0.95] tracking-[-0.02em] transition-colors duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent',
         styles,
         className
       )}

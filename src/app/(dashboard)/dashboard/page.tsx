@@ -3,8 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect } from 'react';
-import { gsap } from 'gsap';
 import {
   LayoutDashboard,
   Users,
@@ -225,17 +223,6 @@ export default function DashboardPage() {
     setSiteUploaded(true);
   };
 
-  // GSAP entrance animation for page elements
-  useEffect(() => {
-    gsap.from('.gsap-fade-up', {
-      y: 30,
-      opacity: 0,
-      duration: 0.6,
-      stagger: 0.1,
-      ease: 'power2.out',
-    });
-  }, []);
-
   return (
     <div className="min-h-screen bg-cream">
       {/* Onboarding overlay (first-run only) */}
@@ -386,7 +373,7 @@ export default function DashboardPage() {
                       className="rounded-full px-5 h-11 border-black/10"
                     >
                       <FileUp className="h-4 w-4 mr-2" />
-                      {siteUploaded ? 'Latest Build Indexed' : 'Re-index Build'}
+                      {siteUploaded ? 'Latest Build Indexed' : 'Re-index Latest Build'}
                     </Button>
                     <Button
                       onClick={runMiroFishSimulation}
@@ -401,7 +388,7 @@ export default function DashboardPage() {
                       ) : (
                         <>
                           <Play className="h-4 w-4 mr-2" />
-                          {simulationComplete ? 'Re-run Simulation' : 'Run Simulation'}
+                          {simulationComplete ? 'Re-run MiroFish Simulation' : 'Run MiroFish Simulation'}
                         </>
                       )}
                     </Button>

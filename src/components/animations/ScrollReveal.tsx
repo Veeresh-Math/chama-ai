@@ -38,10 +38,11 @@ export default function ScrollReveal({
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!ref.current) return;
+    useEffect(() => {
+      if (!ref.current) return;
+      if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const dir = directionMap[direction] || directionMap.up;
+      const dir = directionMap[direction] || directionMap.up;
 
     const ctx = gsap.context(() => {
       gsap.from(ref.current, {

@@ -1,6 +1,6 @@
 'use client';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AnimatePresence } from 'framer-motion';
@@ -39,6 +39,9 @@ export function PaymentModal({
                 <DialogTitle className="text-2xl font-medium tracking-tight">
                   Milestone Settled
                 </DialogTitle>
+                <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground" aria-label="Close dialog">
+                  <span className="sr-only">Close dialog</span>
+                </DialogClose>
                 <p className="text-black/50 text-sm">
                   Payment released via PayPal Payouts
                 </p>
@@ -51,7 +54,7 @@ export function PaymentModal({
                 <p className="text-[11px] font-bold uppercase tracking-wider text-black/40">
                   Milestone
                 </p>
-                <p className="text-lg font-medium text-black">{milestone.name}</p>
+                <p className="text-lg font-medium text-black truncate">{milestone.name}</p>
               </div>
               <div className="p-4 rounded-xl bg-black/5">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-black/40">
@@ -65,13 +68,13 @@ export function PaymentModal({
                 <p className="text-[11px] font-bold uppercase tracking-wider text-black/40">
                   Paid To
                 </p>
-                <p className="text-lg font-medium text-black">{freelancerEmail}</p>
+                <p className="text-lg font-medium text-black truncate">{freelancerEmail}</p>
               </div>
               <div className="p-4 rounded-xl bg-black/5">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-black/40">
                   Batch ID
                 </p>
-                <p className="text-xs font-mono text-black/60 break-all">
+                <p className="text-xs font-mono text-black/60 break-words">
                   {payoutBatchId}
                 </p>
               </div>

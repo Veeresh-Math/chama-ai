@@ -7,11 +7,13 @@ import { FadeIn } from '@/components/animations';
 import { Logo } from '@/components/landing/primitives';
 import { authClient, authErrorMessage, safeNextPath, ensureAppUser, MIN_AUTH_SPINNER_MS, wait, useRedirectIfAuthenticated } from '@/lib/auth/client';
 import { Spinner } from '@/components/ui/spinner';
+import { ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 function SignupForm() {
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [showPassword, setShowPassword] = React.useState(false);
   const [error, setError] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const router = useRouter();
@@ -140,16 +142,25 @@ function SignupForm() {
               <label htmlFor="password" className="block text-[13px] font-medium text-black/60">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
-                placeholder="At least 8 characters"
-                className="mt-1.5 h-11 w-full rounded-xl border border-black/10 bg-white px-3.5 text-[15px] text-black outline-none transition-colors placeholder:text-black/30 focus:border-black/40"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-black/10 bg-white px-3.5 text-[15px] text-black outline-none transition-colors placeholder:text-black/30 focus:border-black/40 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 hover:text-black"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
               <p className="mt-1.5 text-[12.5px] text-black/40">
                 Use 8+ characters — the copilot never sees your password.
               </p>
@@ -158,7 +169,7 @@ function SignupForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="btn-dark w-full inline-flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-9 bg-[#141414] text-white text-sm font-medium hover:bg-[#3d3d3d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2.5"
             >
               {isLoading ? (
                 <>

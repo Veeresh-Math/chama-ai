@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import {
   ResponsiveContainer,
   LineChart,
@@ -18,6 +19,7 @@ import {
   Users,
   ShieldCheck,
   Briefcase,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +58,7 @@ export default function AnalyticsPage() {
   const [data, setData] = React.useState<AnalyticsData | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [range, setRange] = React.useState<'7d' | '30d' | '90d'>('30d');
+  const router = useRouter();
 
   // GSAP entrance animation
   useEffect(() => {
@@ -70,19 +73,44 @@ export default function AnalyticsPage() {
 
   React.useEffect(() => {
     fetch(`/api/analytics?range=${range}`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((json) => {
-        setData(json);
-        setLoading(false);
+      .then((r) => {
+        if (r.status === 401) {
+          router.push('/login');
+          return;
+        }
+        return r.json();
       })
-      .catch(() => setLoading(false));
+      .then((json) => {
+        if (json) {
+          setData(json);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        setLoading(false);
+        setError('Failed to load analytics');
+      });
   }, [range]);
+
+  const [error, setError] = React.useState<string | null>(null);
 
   if (loading) {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center text-center">
         <div className="h-8 w-8 rounded-full border-3 border-black/5 border-t-current animate-spin mb-3" />
         <p className="text-black/50 text-sm">Loading analytics…</p>
+      </div>
+    );
+  }
+
+  if (error && !data) {
+    return (
+      <div className="flex h-[60vh] flex-col items-center justify-center text-center">
+        <RefreshCw className="h-8 w-8 mb-3 animate-spin" />
+        <h2 className="text-xl font-medium text-black">{error}</h2>
+        <Button onClick={() => { setError(null); setLoading(true); }} className="mt-4 rounded-xl">
+          Retry
+        </Button>
       </div>
     );
   }

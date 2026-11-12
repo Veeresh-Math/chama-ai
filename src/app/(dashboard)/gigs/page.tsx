@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -105,10 +106,16 @@ export default function GigsPage() {
     loadGigs();
   }, []);
 
+  const router = useRouter();
+
   async function loadGigs() {
     try {
       setLoading(true);
       const res = await fetch('/api/gigs', { credentials: 'include' });
+      if (res.status === 401) {
+        router.push('/login');
+        return;
+      }
       if (!res.ok) throw new Error('Failed to load gigs');
       const data = await res.json();
       setJobs(data.jobs || []);

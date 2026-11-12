@@ -2,8 +2,9 @@
 
 import { Github } from 'lucide-react';
 import { Container, CtaLink, Logo } from './primitives';
+import { useAuth } from '@/lib/auth/client';
 
-const columns: { title: string; links: { label: string; href: string }[] }[] = [
+const columnsLoggedOut: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: 'Product',
     links: [
@@ -32,7 +33,40 @@ const columns: { title: string; links: { label: string; href: string }[] }[] = [
   },
 ];
 
+const columnsLoggedIn: { title: string; links: { label: string; href: string }[] }[] = [
+  {
+    title: 'Product',
+    links: [
+      { label: 'Features', href: '#features' },
+      { label: 'How it works', href: '#how' },
+      { label: 'See it in action', href: '#demo' },
+      { label: 'Security', href: '#security' },
+      { label: 'Pricing', href: '#pricing' },
+    ],
+  },
+  {
+    title: 'Account',
+    links: [
+      { label: 'Dashboard', href: '/dashboard' },
+      { label: 'Settings', href: '/settings' },
+      { label: 'Communities', href: '/communities' },
+    ],
+  },
+  {
+    title: 'Support',
+    links: [
+      { label: 'Help center', href: '#faq' },
+      { label: 'Contact', href: 'mailto:hello@cham.ai' },
+      { label: 'Reset password', href: '/forgot-password' },
+    ],
+  },
+];
+
 export default function Footer() {
+  const auth = useAuth();
+  const isLoggedIn = auth.status === 'authenticated';
+  const columns = isLoggedIn ? columnsLoggedIn : columnsLoggedOut;
+
   return (
     <footer className="pb-10">
       <Container>
@@ -45,7 +79,13 @@ export default function Footer() {
                 and gig escrow — settled with PayPal and PYUSD.
               </p>
               <div className="mt-5 flex items-center gap-3">
-                <CtaLink href="/signup">Sign up</CtaLink>
+                {isLoggedIn ? (
+                  <CtaLink href="/dashboard">
+                    Go to Dashboard
+                  </CtaLink>
+                ) : (
+                  <CtaLink href="/signup">Sign up</CtaLink>
+                )}
                 <a
                   href="https://github.com/Veeresh-Math/chama-ai"
                   target="_blank"

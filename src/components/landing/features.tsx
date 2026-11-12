@@ -154,7 +154,7 @@ export default function Features() {
                 <article
                   key={feature.title}
                   className={cn(
-                    'group relative flex flex-col rounded-3xl border border-black/5 bg-white p-8 sm:p-10 transition-all duration-300',
+                    'group relative flex flex-col rounded-3xl border border-black/5 bg-white p-8 sm:p-10 transition-transform duration-300',
                     'hover:border-black/20 hover:shadow-xl hover:-translate-y-1'
                   )}
                 >

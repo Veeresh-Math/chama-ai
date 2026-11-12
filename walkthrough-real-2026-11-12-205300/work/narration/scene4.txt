@@ -1,0 +1,1 @@
+﻿When a cycle closes, our AI agent proposes the split based on real balances and trust scores — but you always approve before any money moves. PayPal Payouts settles everyone at once with receipts, and every transaction is recorded in an immutable audit log. Start your collective free today.

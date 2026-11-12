@@ -1,15 +1,7 @@
 {
   "version": 2,
   "buildCommand": "npm install --legacy-peer-deps && npm run build",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": ".vercel/output/static"
-      }
-    }
-  ],
+  "framework": "nextjs",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],

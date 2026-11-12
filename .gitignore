@@ -51,6 +51,7 @@ tsconfig.tsbuildinfo
 # Brag video output
 brag-output*/
 brag-output-*/
+walkthrough-output*/
 
 # Claude skills
 .claude/skills/
